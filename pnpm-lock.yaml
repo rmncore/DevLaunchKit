@@ -116,8 +116,8 @@ importers:
   packages/ai:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -141,8 +141,8 @@ importers:
         specifier: workspace:*
         version: link:../errors
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -157,8 +157,8 @@ importers:
   packages/auth:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -217,8 +217,8 @@ importers:
   packages/communication:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -253,13 +253,13 @@ importers:
         version: 0.45.3(gel@2.2.0)(postgres@3.4.9)
       drizzle-zod:
         specifier: ^0.8.3
-        version: 0.8.3(drizzle-orm@0.45.3(gel@2.2.0)(postgres@3.4.9))(zod@3.25.76)
+        version: 0.8.3(drizzle-orm@0.45.3(gel@2.2.0)(postgres@3.4.9))(zod@4.6.5)
       postgres:
         specifier: ^3.4.5
         version: 3.4.9
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -286,8 +286,8 @@ importers:
         specifier: ^16.4.5
         version: 16.6.1
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       typescript:
         specifier: ^5.7.2
@@ -296,8 +296,8 @@ importers:
   packages/errors:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       typescript:
         specifier: ^5.7.2
@@ -379,8 +379,8 @@ importers:
   packages/payments:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -425,8 +425,8 @@ importers:
   packages/storage:
     dependencies:
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: ^22.10.1
@@ -585,8 +585,8 @@ importers:
         specifier: workspace:*
         version: link:../errors
       zod:
-        specifier: ^3.24.1
-        version: 3.25.76
+        specifier: ^4.6.5
+        version: 4.6.5
     devDependencies:
       typescript:
         specifier: ^5.7.2
@@ -3310,8 +3310,8 @@ packages:
     resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
     engines: {node: '>=12.20'}
 
-  zod@3.25.76:
-    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+  zod@4.6.5:
+    resolution: {integrity: sha512-v5l/aFXZQeai4awLbOpSoHecE9UiMrnfx75tEXLjNonXVARxQ5mOeipTjROUchszUNCqnE+hqAMujRsRHsut2Q==}
 
 snapshots:
 
@@ -4862,10 +4862,10 @@ snapshots:
       gel: 2.2.0
       postgres: 3.4.9
 
-  drizzle-zod@0.8.3(drizzle-orm@0.45.3(gel@2.2.0)(postgres@3.4.9))(zod@3.25.76):
+  drizzle-zod@0.8.3(drizzle-orm@0.45.3(gel@2.2.0)(postgres@3.4.9))(zod@4.6.5):
     dependencies:
       drizzle-orm: 0.45.3(gel@2.2.0)(postgres@3.4.9)
-      zod: 3.25.76
+      zod: 4.6.5
 
   emoji-regex@10.6.0: {}
 
@@ -5870,4 +5870,4 @@ snapshots:
 
   yocto-queue@1.2.2: {}
 
-  zod@3.25.76: {}
+  zod@4.6.5: {}
