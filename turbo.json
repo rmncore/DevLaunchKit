@@ -6,6 +6,13 @@
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
+      "dependsOn": ["^build"],
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "DEVLAUNCHKIT_ADMIN_DEMO",
+        "PORT",
+        "NEXT_TELEMETRY_DISABLED"
+      ],
       "cache": false,
       "persistent": true
     },

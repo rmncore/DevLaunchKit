@@ -26,11 +26,11 @@ export function SettingsLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col md:flex-row gap-6">
+    <div className="flex flex-col lg:flex-row gap-6">
       {/* Sidebar navigation */}
-      <aside className="w-full md:w-56 shrink-0">
+      <aside className="w-full lg:w-52 shrink-0">
         <nav
-          className="flex md:flex-col gap-1 overflow-x-auto md:overflow-x-visible pb-2 md:pb-0"
+          className="flex lg:flex-col gap-1 overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0"
           aria-label="Settings navigation"
         >
           {sidebarItems.map((item) => {
@@ -40,6 +40,8 @@ export function SettingsLayout({
               <button
                 key={item.id}
                 onClick={() => onSectionSelect(item.id)}
+                type="button"
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold shrink-0 transition-colors",
                   isActive
@@ -56,7 +58,7 @@ export function SettingsLayout({
       </aside>
 
       {/* Main settings body */}
-      <div className="flex-1 space-y-8">{children}</div>
+      <div className="min-w-0 flex-1 space-y-8">{children}</div>
     </div>
   );
 }
@@ -73,12 +75,12 @@ export function SettingsCard({
   footer?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm overflow-hidden">
-      <div className="p-4 md:p-6 space-y-4">
+    <div className="overflow-hidden rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+      <div className="space-y-4 p-4 md:p-5">
         <div>
           <h2 className="text-sm font-semibold text-neutral-950 dark:text-white">{title}</h2>
           {description && (
-            <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400 leading-relaxed">
+            <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
               {description}
             </p>
           )}
@@ -107,7 +109,7 @@ export function DangerZone({
 }) {
   return (
     <div className="rounded-xl border border-red-200 dark:border-red-950/40 bg-red-50/5 dark:bg-red-950/5 overflow-hidden">
-      <div className="p-4 md:p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="p-4 md:p-6 flex flex-col lg:flex-row md:items-center justify-between gap-4">
         <div className="flex gap-3">
           <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
           <div>

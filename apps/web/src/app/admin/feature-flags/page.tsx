@@ -50,7 +50,7 @@ export default function AdminFeatureFlagsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Feature Flags Console</h1>
         <p className="text-neutral-500 dark:text-neutral-400">
-          Control feature flag toggles, progressive rollouts, and environments keys.
+          Try feature flag controls with sample values. Changes last until you leave this page.
         </p>
       </div>
 
@@ -58,7 +58,7 @@ export default function AdminFeatureFlagsPage() {
         {flags.map((flag) => (
           <Card
             key={flag.id}
-            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm"
+            className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden"
           >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <div className="flex items-center gap-2">
@@ -67,6 +67,9 @@ export default function AdminFeatureFlagsPage() {
               </div>
               <button
                 onClick={() => toggleFlag(flag.id)}
+                type="button"
+                aria-label={flag.name}
+                aria-pressed={flag.status}
                 className="text-neutral-600 dark:text-neutral-300"
               >
                 {flag.status ? (

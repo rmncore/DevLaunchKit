@@ -10,28 +10,28 @@ export default function ActivityPage() {
       action: "API Key Generated",
       user: "alex@saas.com",
       ip: "192.168.1.1",
-      time: new Date(),
+      time: "2026-07-12T15:00:00Z",
       icon: Key,
     },
     {
       action: "Settings Changed: Reduced Motion",
       user: "alex@saas.com",
       ip: "192.168.1.1",
-      time: new Date(Date.now() - 3600000),
+      time: "2026-07-12T14:00:00Z",
       icon: Settings,
     },
     {
       action: "MFA Authentication Disabled",
       user: "blake@saas.com",
       ip: "182.16.8.44",
-      time: new Date(Date.now() - 86400000),
+      time: "2026-07-11T15:00:00Z",
       icon: Shield,
     },
     {
       action: "Profile Avatar Updated",
       user: "alex@saas.com",
       ip: "192.168.1.1",
-      time: new Date(Date.now() - 172800000),
+      time: "2026-07-10T15:00:00Z",
       icon: User,
     },
   ];
@@ -73,12 +73,12 @@ export default function ActivityPage() {
                               {log.action}{" "}
                               <span className="font-normal text-neutral-500">by {log.user}</span>
                             </p>
-                            <p className="text-[10px] text-neutral-400 mt-0.5">
+                            <p className="text-xs text-neutral-400 mt-0.5">
                               Originating IP: {log.ip}
                             </p>
                           </div>
-                          <div className="text-right text-[10px] whitespace-nowrap text-neutral-400">
-                            {new Date(log.time).toLocaleTimeString()}
+                          <div className="text-right text-xs whitespace-nowrap text-neutral-400">
+                            {log.time.slice(11, 16) + " UTC"}
                           </div>
                         </div>
                       </div>

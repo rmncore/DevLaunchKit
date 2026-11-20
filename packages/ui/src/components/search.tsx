@@ -36,38 +36,6 @@ export function CommandPalette({
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const listRef = React.useRef<HTMLDivElement>(null);
 
-  // Reset indices on query change
-  React.useEffect(() => {
-    setSelectedIndex(0);
-  }, [query]);
-
-  // Handle keyboard events globally when palette is open
-  React.useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onClose();
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev + 1) % filteredCommands.length);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev - 1 + filteredCommands.length) % filteredCommands.length);
-      } else if (e.key === "Enter") {
-        e.preventDefault();
-        if (filteredCommands[selectedIndex]) {
-          filteredCommands[selectedIndex].action();
-          onClose();
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, selectedIndex, query, commands]);
-
   // Fuzzy-like query filter
   const filteredCommands = React.useMemo(() => {
     if (!query.trim()) return commands;
@@ -78,6 +46,11 @@ export function CommandPalette({
         cmd.category.toLowerCase().includes(cleanQuery)
     );
   }, [query, commands]);
+
+  // Reset indices on query change
+  React.useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
 
   // Group commands by category
   const groupedCommands = React.useMemo(() => {
@@ -91,8 +64,39 @@ export function CommandPalette({
     return groups;
   }, [filteredCommands]);
 
-  // Track absolute index inside grouped lists for click/hover activation
-  let absoluteCounter = 0;
+  const displayedCommands = React.useMemo(
+    () => Object.values(groupedCommands).flat(),
+    [groupedCommands]
+  );
+
+  // Handle keyboard events globally when palette is open
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+      } else if (displayedCommands.length > 0 && e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev + 1) % displayedCommands.length);
+      } else if (displayedCommands.length > 0 && e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedIndex(
+          (prev) => (prev - 1 + displayedCommands.length) % displayedCommands.length
+        );
+      } else if (e.key === "Enter") {
+        e.preventDefault();
+        if (displayedCommands[selectedIndex]) {
+          displayedCommands[selectedIndex].action();
+          onClose();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, selectedIndex, displayedCommands, onClose]);
 
   return (
     <AnimatePresence>
@@ -124,6 +128,7 @@ export function CommandPalette({
                 <Search className="h-5 w-5 text-neutral-400 shrink-0" />
                 <input
                   type="text"
+                  aria-label="Search commands"
                   placeholder="Type a command or search console..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -149,7 +154,7 @@ export function CommandPalette({
                       </h3>
                       <ul className="space-y-0.5">
                         {items.map((cmd) => {
-                          const itemIdx = absoluteCounter++;
+                          const itemIdx = displayedCommands.indexOf(cmd);
                           const isSelected = selectedIndex === itemIdx;
                           const Icon = cmd.icon;
 

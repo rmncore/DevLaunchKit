@@ -57,12 +57,12 @@ export function CodeBlock({ code, language = "typescript" }: { code: string; lan
   };
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-900/50 my-3 text-left">
+    <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-900/50 my-3 text-left">
       <div className="flex items-center justify-between px-4 py-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900 text-xs font-mono font-bold text-slate-500">
         <span>{language}</span>
         <button
           onClick={handleCopy}
-          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-650 flex items-center gap-1 cursor-pointer"
+          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 flex items-center gap-1 cursor-pointer"
         >
           {copied ? (
             <Check className="w-3.5 h-3.5 text-emerald-500" />
@@ -72,7 +72,7 @@ export function CodeBlock({ code, language = "typescript" }: { code: string; lan
           <span>{copied ? "Copied" : "Copy"}</span>
         </button>
       </div>
-      <pre className="p-4 overflow-x-auto font-mono text-sm leading-relaxed text-slate-850 dark:text-slate-200">
+      <pre className="p-4 overflow-x-auto font-mono text-sm leading-relaxed text-slate-800 dark:text-slate-200">
         <code>{code}</code>
       </pre>
     </div>
@@ -127,7 +127,7 @@ export function MessageBubble({ message }: { message: Message }) {
       <Avatar
         fallback={isAi ? "AI" : "ME"}
         className={cn(
-          "w-8 h-8 rounded-xl",
+          "w-8 h-8 rounded-lg",
           isAi ? "bg-indigo-500 text-white" : "bg-slate-200 dark:bg-slate-900"
         )}
       />
@@ -167,7 +167,7 @@ export function MessageBubble({ message }: { message: Message }) {
           className={cn(
             "p-4 rounded-2xl border",
             isAi
-              ? "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-850 rounded-tl-none text-slate-800 dark:text-slate-100"
+              ? "bg-slate-50 dark:bg-slate-900 border-slate-100 dark:border-slate-800 rounded-tl-none text-slate-800 dark:text-slate-100"
               : "bg-indigo-600 border-indigo-700 rounded-tr-none text-white"
           )}
         >
@@ -190,7 +190,7 @@ export function ToolCallRenderer({ tool }: { tool: ToolCall }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-900/40 text-left my-2">
+    <div className="rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-slate-50 dark:bg-slate-900/40 text-left my-2">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between px-4 py-2.5 bg-slate-100/50 dark:bg-slate-900 text-xs font-mono font-bold cursor-pointer"
@@ -224,14 +224,14 @@ export function ToolCallRenderer({ tool }: { tool: ToolCall }) {
         <div className="p-4 space-y-3 border-t border-slate-200 dark:border-slate-800 text-xs font-mono">
           <div>
             <p className="text-slate-400 font-bold mb-1">ARGUMENTS:</p>
-            <pre className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 overflow-x-auto text-slate-700 dark:text-slate-350">
+            <pre className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-x-auto text-slate-700 dark:text-slate-300">
               {JSON.stringify(tool.arguments, null, 2)}
             </pre>
           </div>
           {tool.result && (
             <div>
               <p className="text-slate-400 font-bold mb-1">RESULT:</p>
-              <pre className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-850 overflow-x-auto text-emerald-600 dark:text-emerald-400">
+              <pre className="p-2.5 rounded-lg bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-x-auto text-emerald-600 dark:text-emerald-400">
                 {JSON.stringify(tool.result, null, 2)}
               </pre>
             </div>
@@ -259,11 +259,11 @@ export function ConversationSidebar({
   onNewChat?: () => void;
 }) {
   return (
-    <div className="w-64 h-full border-r border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 flex flex-col justify-between text-left">
+    <div className="max-h-56 w-full shrink-0 overflow-y-auto border-b border-slate-200 bg-slate-50 p-4 text-left dark:border-slate-800 dark:bg-slate-950 md:h-full md:max-h-none md:w-56 md:border-b-0 md:border-r">
       <div className="space-y-4">
         <button
           onClick={onNewChat}
-          className="w-full h-11 border border-dashed border-slate-350 dark:border-slate-800 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-900 transition font-bold text-sm text-slate-700 dark:text-slate-300 cursor-pointer"
+          className="w-full h-11 border border-dashed border-slate-300 dark:border-slate-800 rounded-lg flex items-center justify-center gap-2 hover:bg-slate-100 dark:hover:bg-slate-900 transition font-bold text-sm text-slate-700 dark:text-slate-300 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> New Chat
         </button>
@@ -272,14 +272,15 @@ export function ConversationSidebar({
             <button
               key={s.id}
               onClick={() => onSelectSession(s.id)}
+              aria-pressed={!!s.active}
               className={cn(
-                "w-full px-3 py-2.5 rounded-xl flex items-center gap-2 text-sm font-semibold transition hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer",
+                "w-full px-3 py-2.5 rounded-lg flex items-center gap-2 text-sm font-semibold transition hover:bg-slate-100 dark:hover:bg-slate-900 cursor-pointer",
                 s.active &&
-                  "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-850 text-indigo-650 dark:text-indigo-400"
+                  "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-indigo-700 dark:text-indigo-400"
               )}
             >
               <MessageSquare className="w-4 h-4 shrink-0 text-slate-400" />
-              <span className="truncate">{s.title}</span>
+              <span className="min-w-0 break-words text-left">{s.title}</span>
             </button>
           ))}
         </div>
@@ -291,17 +292,21 @@ export function ConversationSidebar({
 // ChatWindow
 export interface ChatWindowProps {
   title?: string;
+  subtitle?: string;
   messages: Message[];
   onSendMessage: (text: string) => void;
   loading?: boolean;
+  disabled?: boolean;
   tools?: ToolCall[];
 }
 
 export function ChatWindow({
   title = "AI Copilot",
+  subtitle,
   messages,
   onSendMessage,
   loading,
+  disabled,
   tools,
 }: ChatWindowProps) {
   const [inputText, setInputText] = useState("");
@@ -312,28 +317,30 @@ export function ChatWindow({
   }, [messages, loading, tools]);
 
   const handleSend = () => {
-    if (!inputText.trim()) return;
-    onSendMessage(inputText);
+    if (disabled || loading || !inputText.trim()) return;
+    onSendMessage(inputText.trim());
     setInputText("");
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") handleSend();
+    if (e.key === "Enter" && !e.nativeEvent.isComposing) handleSend();
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full border border-slate-200 dark:border-slate-800 rounded-3xl bg-white dark:bg-slate-950 overflow-hidden shadow-sm">
+    <div className="flex h-[460px] min-w-0 flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950 md:h-full">
       {/* Chat header */}
       <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-900 bg-slate-50/50 dark:bg-slate-950/20 flex items-center justify-between text-left">
         <div className="flex items-center gap-2.5">
-          <div className="p-1.5 rounded-xl bg-indigo-500 text-white shrink-0">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+          <div className="shrink-0 rounded-md bg-slate-100 p-1.5 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+            <Sparkles className="w-4 h-4" />
           </div>
           <div>
             <h4 className="font-bold text-sm text-slate-900 dark:text-white leading-none">
               {title}
             </h4>
-            <span className="text-[10px] text-slate-400 font-medium">Next-gen Gemini engine</span>
+            {subtitle && (
+              <span className="text-xs text-slate-600 dark:text-slate-400">{subtitle}</span>
+            )}
           </div>
         </div>
       </div>
@@ -341,12 +348,14 @@ export function ChatWindow({
       {/* Messages list */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-6 space-y-6 flex flex-col bg-slate-50/10 dark:bg-slate-950/5"
+        role="log"
+        aria-label="Conversation"
+        className="flex min-h-0 flex-1 flex-col space-y-6 overflow-y-auto break-words bg-slate-50 p-4 dark:bg-slate-950 sm:p-6"
       >
         {messages.length === 0 && (
           <div className="my-auto text-center space-y-2 max-w-sm mx-auto">
             <Sparkles className="w-8 h-8 text-indigo-500 mx-auto animate-pulse" />
-            <h5 className="font-bold text-sm text-slate-850 dark:text-white">Ask anything</h5>
+            <h5 className="font-bold text-sm text-slate-800 dark:text-white">Ask anything</h5>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               Type your query below to chat with the assistant and dispatch mock tasks.
             </p>
@@ -366,15 +375,19 @@ export function ChatWindow({
       <div className="p-4 border-t border-slate-100 dark:border-slate-900 bg-white dark:bg-slate-950 flex gap-2">
         <input
           type="text"
+          aria-label="Message"
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Ask a question..."
-          className="flex-1 h-11 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="min-w-0 flex-1 h-11 px-4 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
         <button
           onClick={handleSend}
-          className="p-3 rounded-xl bg-indigo-650 hover:bg-indigo-600 text-white shadow-md shadow-indigo-600/10 hover:shadow-indigo-600/20 active:scale-95 transition cursor-pointer"
+          type="button"
+          aria-label="Send message"
+          disabled={disabled || loading || !inputText.trim()}
+          className="rounded-md bg-indigo-600 p-3 text-white transition-colors hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
         >
           <Send className="w-4.5 h-4.5" />
         </button>
@@ -402,7 +415,7 @@ export function StreamingResponse({ text }: { text: string }) {
   }, [text]);
 
   return (
-    <div className="relative font-mono text-sm leading-relaxed text-slate-850 dark:text-slate-200">
+    <div className="relative font-mono text-sm leading-relaxed text-slate-800 dark:text-slate-200">
       <span>{displayed}</span>
       <span className="w-1.5 h-4 bg-indigo-500 inline-block animate-pulse ml-0.5" />
     </div>

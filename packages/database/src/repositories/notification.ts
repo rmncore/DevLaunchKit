@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { Notification, InsertNotification } from "../types";
-import { notifications, notificationPreferences } from "../schema";
+import { BaseRepository } from "./base.js";
+import { Notification, InsertNotification } from "../types/index.js";
+import { notifications, notificationPreferences } from "../schema/index.js";
 import { eq, and } from "drizzle-orm";
 
 export class NotificationRepository extends BaseRepository<

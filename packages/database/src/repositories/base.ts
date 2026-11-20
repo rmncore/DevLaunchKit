@@ -1,4 +1,4 @@
-import { db } from "../utils/connection";
+import { db } from "../utils/connection.js";
 import { SQL, eq } from "drizzle-orm";
 
 export interface PaginationOptions {

@@ -1,5 +1,6 @@
-import { db } from "../utils/connection";
-import * as schema from "../schema";
+import { pathToFileURL } from "node:url";
+import { client, db } from "../utils/connection.js";
+import * as schema from "../schema/index.js";
 
 async function main() {
   console.log("🌱 Database seeding started...");
@@ -166,15 +167,16 @@ async function main() {
     console.log("🎉 Database seeding completed successfully!");
   } catch (error) {
     console.error("❌ Database seeding error:", error);
-    process.exit(1);
+    throw error;
   }
 }
 
-// Check if run directly
-if (import.meta.url.startsWith("file:")) {
-  const modulePath = new URL(import.meta.url).pathname;
-  if (process.argv[1] && (process.argv[1] === modulePath || process.argv[1].endsWith("index.ts"))) {
-    main();
-  }
+if (process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url) {
+  main()
+    .catch(() => {
+      process.exitCode = 1;
+    })
+    .finally(() => client.end());
 }
+
 export { main };

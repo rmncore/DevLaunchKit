@@ -10,65 +10,41 @@ This document provides a fast-track sequence for developers who want to initiali
 
 ## Prerequisites
 
-- Node.js `v20+` & `pnpm 9+`
-- Local PostgreSQL instance running (or Docker installed)
+Use Node.js 20 or newer and pnpm 9.15.0. Docker is optional for the component demos, and can provide PostgreSQL for database-backed development.
 
----
+## Start the component demos
 
-## The 10-Minute Launch Sequence
-
-### 1. Initialize Workspace
+From the repository root, install dependencies and start the web app:
 
 ```bash
-git clone https://github.com/devlaunchkit/devlaunchkit.git
-cd devlaunchkit
-pnpm install
-```
-
-### 2. Copy Local Overrides
-
-```bash
-cp .env.example .env
-cp .env.local.example .env.local
-```
-
-### 3. Spin Up Services & DB
-
-If you use Docker (recommended):
-
-```bash
-docker-compose up -d
-```
-
-Generate and run migrations to initialize the PostgreSQL schema:
-
-```bash
-pnpm --filter @devlaunchkit/database db:push
-```
-
-### 4. Run Seed Data
-
-Seed your database with default system plans, organization roles, and sandbox users:
-
-```bash
-pnpm --filter @devlaunchkit/database db:seed
-```
-
-### 5. Run Health Validation
-
-Execute the CLI diagnostics script to verify environment parameters:
-
-```bash
-pnpm doctor
-```
-
-### 6. Boot Dev Servers
-
-```bash
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open `http://localhost:3000` in your web browser.
+Open **http://localhost:3000** and select **Workspace** to explore the dashboard. To try the admin console with sample records, start development with `DEVLAUNCHKIT_ADMIN_DEMO=true pnpm dev` and select **Admin Center** in the workspace sidebar. Use this mode on a private development instance.
+
+## Run with PostgreSQL
+
+Start the development database, then apply the checked-in migrations:
+
+```bash
+docker compose up -d --wait db
+export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/launchkit
+pnpm --filter @devlaunchkit/database db:migrate
+pnpm dev
+```
+
+For a fresh development database that needs sample rows, run `pnpm --filter @devlaunchkit/database db:seed` before starting the app. Seed data does not create an administrator sign-in session. Connect your authentication provider to use the admin console with real records.
+
+To run both PostgreSQL and the web app in containers, use `docker compose up --build`. Apply migrations from the host using the same database URL above.
+
+If your Docker build uses an HTTPS proxy with a custom CA, forward the proxy settings and pass the CA bundle as a BuildKit secret. The Dockerfiles use that bundle during dependency installation.
+
+```bash
+docker build --build-arg HTTP_PROXY --build-arg HTTPS_PROXY \
+  --secret id=registry_ca,src="$NODE_EXTRA_CA_CERTS" \
+  -f Dockerfile.dev -t devlaunchkit-web .
+```
 
 ---
 
@@ -89,22 +65,8 @@ _Initial authentication screen visible after local boot._
 
 ---
 
-## Best Practices
-
-- **Verify with Doctor**: Always run `pnpm doctor` after modifying `.env` or pulling updates from upstream repository branches.
-- **Seeding local databases**: Run `pnpm --filter @devlaunchkit/database db:seed` when testing billing flows to populate your local database with Stripe product catalog definitions.
-
-## Common Mistakes
-
-- **Port Conflict**: PostgreSQL container fails to start because port `5432` is locked by a pre-existing local service. Run `pg_ctl stop` or use another port.
-- **Skipping Database Seeding**: Leaving database empty will cause mock login attempts to fail due to missing tenant organizations and system roles definitions.
-
----
-
 ## Troubleshooting
 
-- **Database Seed Errors**:
-  - Verify that migrations have been successfully run: `pnpm --filter @devlaunchkit/database db:push`.
-  - Check that the `DATABASE_URL` string matches the correct connection parameters.
-- **Next.js Compilation Warning**:
-  - Next.js might complain about missing Clerk / Better Auth environment variables. You can ignore these warnings for local runs as the application automatically falls back to secure simulation adapters.
+- If port 5432 is occupied, use your existing development database and export its connection URL before running migrations or starting the app.
+- If you update a workspace package, restart the development command to rebuild its compiled output.
+- Run `pnpm doctor` to inspect local environment and database settings.

@@ -73,6 +73,17 @@ jobs:
       - name: Run TypeScript type checking
         run: pnpm typecheck
 
+  typecheck-result:
+    name: Type Check
+    runs-on: ubuntu-latest
+    needs: [typecheck]
+    if: ${{ always() }}
+    steps:
+      - name: Require all TypeScript checks to pass
+        env:
+          TYPECHECK_RESULT: ${{ needs.typecheck.result }}
+        run: test "$TYPECHECK_RESULT" = success
+
   build:
     name: Build (Node ${{ matrix.node-version }})
     runs-on: ubuntu-latest
@@ -156,7 +167,7 @@ jobs:
           retention-days: 7
 
   security-audit:
-    name: Security Audit
+    name: Security Scan
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

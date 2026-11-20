@@ -1,8 +1,5 @@
-"use client";
-
-import * as React from "react";
-import { PageContainer, ContentWrapper, PageHeader, SettingsCard } from "@devlaunchkit/ui";
-import { BookOpen, FileText, ArrowRight } from "lucide-react";
+import { PageContainer, ContentWrapper, PageHeader } from "@devlaunchkit/ui";
+import { BookOpen, ArrowRight } from "lucide-react";
 
 export default function DocsPage() {
   const guides = [
@@ -42,13 +39,13 @@ export default function DocsPage() {
                 <h3 className="text-xs font-bold text-neutral-950 dark:text-white">
                   {guide.title}
                 </h3>
-                <p className="text-[11px] text-neutral-500 leading-relaxed">{guide.desc}</p>
+                <p className="text-xs text-neutral-500 leading-relaxed">{guide.desc}</p>
               </div>
               <a
-                href={guide.path}
-                className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 group"
+                href={`https://github.com/rmncore/DevLaunchKit/blob/main${guide.path}`}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400 group"
               >
-                Read Guide
+                Read {guide.title}
                 <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
               </a>
             </div>

@@ -24,7 +24,7 @@ export function Card({ glass = false, className, children, ...props }: CardProps
   return (
     <div
       className={cn(
-        "rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-6 shadow-sm flex flex-col gap-4 text-left transition-all duration-200",
+        "flex min-w-0 flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-slate-800 dark:bg-slate-950 sm:p-5",
         glass && "bg-white/70 dark:bg-slate-950/60 backdrop-blur-md",
         className
       )}
@@ -51,7 +51,13 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn("font-bold text-lg text-slate-900 dark:text-slate-50", className)} {...props}>
+    <h3
+      className={cn(
+        "text-base font-semibold tracking-tight text-slate-900 dark:text-slate-50",
+        className
+      )}
+      {...props}
+    >
       {children}
     </h3>
   );
@@ -63,7 +69,7 @@ export function CardDescription({
   ...props
 }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn("text-xs text-slate-500 dark:text-slate-400", className)} {...props}>
+    <p className={cn("text-sm text-slate-600 dark:text-slate-400", className)} {...props}>
       {children}
     </p>
   );
@@ -151,21 +157,21 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 export function Badge({ variant = "secondary", className, children, ...props }: BadgeProps) {
   const variantClasses = {
     primary:
-      "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-650 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30",
+      "bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-900/30",
     secondary:
       "bg-slate-100 dark:bg-slate-900 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-800",
     danger:
-      "bg-red-50 dark:bg-red-950/20 text-red-650 dark:text-red-400 border border-red-100 dark:border-red-900/30",
+      "bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 border border-red-100 dark:border-red-900/30",
     success:
-      "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-650 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30",
+      "bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/30",
     warning:
-      "bg-amber-50 dark:bg-amber-950/20 text-amber-650 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30",
+      "bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-400 border border-amber-100 dark:border-amber-900/30",
   };
 
   return (
     <span
       className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-extrabold tracking-wide",
+        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium",
         variantClasses[variant],
         className
       )}
@@ -520,73 +526,122 @@ export function Calendar({ className }: { className?: string }) {
 export function Charts({
   type = "line",
   data,
+  labels,
+  ariaLabel,
 }: {
   type?: "line" | "bar" | "area";
   data: number[];
+  labels?: string[];
+  ariaLabel?: string;
 }) {
-  const max = Math.max(...data, 1);
-  const width = 400;
-  const height = 150;
-  const padding = 10;
-  const points = data.map((val, idx) => {
-    const x = padding + (idx / (data.length - 1)) * (width - padding * 2);
-    const y = height - padding - (val / max) * (height - padding * 2);
-    return `${x},${y}`;
-  });
+  const values = data.filter(Number.isFinite);
+  if (!values.length) {
+    return (
+      <p className="py-8 text-center text-sm text-slate-600 dark:text-slate-400">No chart data</p>
+    );
+  }
 
-  const pathD = `M ${points.join(" L ")}`;
-  const areaD = `${pathD} L ${width - padding},${height - padding} L ${padding},${height - padding} Z`;
+  const width = 480;
+  const height = 180;
+  const low = Math.min(...values, 0);
+  const step = Math.max(1, Math.ceil((Math.max(...values, 0) - low) / 3));
+  const high = low + 3 * step;
+  const y = (value: number) => height - ((value - low) / (high - low)) * height;
+  const baseline = y(0);
+  const points = values.map((value, index) => ({
+    x: values.length === 1 ? width / 2 : (index * width) / (values.length - 1),
+    y: y(value),
+  }));
+  const line = points.map((point) => `${point.x},${point.y}`).join(" ");
+  const ticks = [high, high - step, high - step * 2, low];
 
   return (
-    <div className="w-full border border-slate-200 dark:border-slate-800 rounded-2xl p-4 bg-white dark:bg-slate-950">
-      <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto overflow-visible">
-        {/* Grid lines */}
-        <line
-          x1={padding}
-          y1={height / 2}
-          x2={width - padding}
-          y2={height / 2}
-          className="stroke-slate-100 dark:stroke-slate-900"
-          strokeDasharray="4"
-        />
-
-        {type === "area" && (
-          <path d={areaD} className="fill-indigo-500/10 dark:fill-indigo-500/5 stroke-none" />
-        )}
-
-        {type !== "bar" && (
-          <path
-            d={pathD}
-            fill="none"
-            strokeWidth="2.5"
-            className="stroke-indigo-500"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        )}
-
-        {type === "bar" &&
-          data.map((val, idx) => {
-            const x = padding + (idx / data.length) * (width - padding * 2) + 5;
-            const barW = (width - padding * 2) / data.length - 10;
-            const barH = (val / max) * (height - padding * 2);
-            const y = height - padding - barH;
-            return (
-              <rect
-                key={idx}
-                x={x}
-                y={y}
-                width={barW}
-                height={barH}
-                className="fill-indigo-500 dark:fill-indigo-650 hover:fill-indigo-400 transition-colors"
-                rx="3"
-              />
-            );
-          })}
-      </svg>
-    </div>
+    <figure className="min-w-0" role="img" aria-label={ariaLabel ?? `${type} chart`}>
+      <div className="flex gap-2">
+        <div
+          aria-hidden="true"
+          className="flex h-36 shrink-0 flex-col justify-between text-right text-[11px] tabular-nums text-slate-600 dark:text-slate-400 sm:h-48"
+        >
+          {ticks.map((tick) => (
+            <span key={tick}>
+              {new Intl.NumberFormat("en", {
+                notation: "compact",
+                maximumFractionDigits: 1,
+              }).format(tick)}
+            </span>
+          ))}
+        </div>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          preserveAspectRatio="none"
+          aria-hidden="true"
+          className="h-36 min-w-0 flex-1 overflow-visible sm:h-48"
+        >
+          {ticks.map((tick) => (
+            <line
+              key={tick}
+              x1={0}
+              x2={width}
+              y1={y(tick)}
+              y2={y(tick)}
+              vectorEffect="non-scaling-stroke"
+              className="stroke-slate-200 dark:stroke-slate-800"
+            />
+          ))}
+          {type === "area" && points.length > 1 && (
+            <polygon
+              points={`${points[0].x},${baseline} ${line} ${points.at(-1)?.x},${baseline}`}
+              className="fill-indigo-600/12 dark:fill-indigo-400/15"
+            />
+          )}
+          {type !== "bar" && points.length > 1 && (
+            <polyline
+              points={line}
+              fill="none"
+              strokeWidth="2"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
+              className="stroke-indigo-600 dark:stroke-indigo-400"
+            />
+          )}
+          {type !== "bar" && points.length === 1 && (
+            <circle
+              cx={points[0].x}
+              cy={points[0].y}
+              r="3"
+              className="fill-indigo-600 dark:fill-indigo-400"
+            />
+          )}
+          {type === "bar" &&
+            values.map((value, index) => {
+              const column = width / values.length;
+              return (
+                <rect
+                  key={index}
+                  x={column * (index + 0.18)}
+                  width={column * 0.64}
+                  y={Math.min(y(value), baseline)}
+                  height={Math.abs(y(value) - baseline)}
+                  className="fill-indigo-600 dark:fill-indigo-400"
+                />
+              );
+            })}
+        </svg>
+      </div>
+      {labels?.length ? (
+        <div
+          aria-hidden="true"
+          className="mt-2 flex justify-between gap-1 pl-7 text-[11px] text-slate-600 dark:text-slate-400"
+        >
+          {labels.map((label, index) => (
+            <span key={index}>{label}</span>
+          ))}
+        </div>
+      ) : null}
+    </figure>
   );
 }
+
 export function MetricCards({
   title,
   value,
@@ -597,10 +652,10 @@ export function MetricCards({
   unit?: string;
 }) {
   return (
-    <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col gap-1 text-left">
-      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">{title}</span>
+    <div className="flex flex-col gap-1 rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-slate-800 dark:bg-slate-950">
+      <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</span>
       <div className="flex items-baseline gap-1">
-        <span className="text-2xl font-black">{value}</span>
+        <span className="text-2xl font-semibold tabular-nums tracking-tight">{value}</span>
         {unit && <span className="text-xs text-slate-400 font-medium">{unit}</span>}
       </div>
     </div>

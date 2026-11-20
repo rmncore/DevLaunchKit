@@ -51,7 +51,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <input
             ref={ref}
             className={cn(
-              "w-full h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 transition disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900",
+              "w-full h-11 px-3.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500 transition disabled:opacity-50 disabled:bg-slate-50 dark:disabled:bg-slate-900",
               icon && "pl-10",
               error && "border-red-500 focus:ring-red-500",
               className
@@ -80,7 +80,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           className={cn(
-            "w-full min-h-[100px] p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-50",
+            "w-full min-h-[100px] p-3 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition disabled:opacity-50",
             error && "border-red-500 focus:ring-red-500",
             className
           )}
@@ -106,7 +106,7 @@ export const PasswordInput = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={show ? "text" : "password"}
             className={cn(
-              "w-full h-11 pl-3.5 pr-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition",
+              "w-full h-11 pl-3.5 pr-10 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition",
               error && "border-red-500 focus:ring-red-500",
               className
             )}
@@ -177,7 +177,7 @@ export function OTPInput({ length = 6, value, onChange, error, label }: OTPInput
               onChange={(e) => handleTextChange(e, idx)}
               onKeyDown={(e) => handleKeyDown(e, idx)}
               className={cn(
-                "w-11 h-11 text-center font-bold text-lg rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition",
+                "w-11 h-11 text-center font-bold text-lg rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition",
                 error && "border-red-500 focus:ring-red-500"
               )}
             />
@@ -236,12 +236,13 @@ export function Switch({ checked, onCheckedChange, label }: SwitchProps) {
       <SwitchPrimitive.Root
         checked={checked}
         onCheckedChange={onCheckedChange}
-        className="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full relative focus:outline-none focus:ring-2 focus:ring-indigo-500 transition data-[state=checked]:bg-indigo-650 cursor-pointer"
+        aria-label={label}
+        className="w-11 h-6 bg-slate-200 dark:bg-slate-800 rounded-full relative focus:outline-none focus:ring-2 focus:ring-indigo-500 transition data-[state=checked]:bg-indigo-600 cursor-pointer"
       >
         <SwitchPrimitive.Thumb className="block w-5 h-5 bg-white rounded-full shadow transition-transform translate-x-0.5 will-change-transform data-[state=checked]:translate-x-5" />
       </SwitchPrimitive.Root>
       {label && (
-        <span className="text-sm font-medium text-slate-700 dark:text-slate-350">{label}</span>
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</span>
       )}
     </div>
   );
@@ -301,7 +302,7 @@ export function Select({
     <div className="space-y-1.5 text-left w-full">
       {label && <Label>{label}</Label>}
       <SelectPrimitive.Root value={value} onValueChange={onValueChange}>
-        <SelectPrimitive.Trigger className="w-full h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer">
+        <SelectPrimitive.Trigger className="w-full h-11 px-3.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-indigo-500 transition cursor-pointer">
           <SelectPrimitive.Value placeholder={placeholder} />
           <SelectPrimitive.Icon className="text-slate-400">
             <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
@@ -311,7 +312,7 @@ export function Select({
         </SelectPrimitive.Trigger>
 
         <SelectPrimitive.Portal>
-          <SelectPrimitive.Content className="overflow-hidden bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 p-1">
+          <SelectPrimitive.Content className="overflow-hidden bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md shadow-lg z-50 p-1">
             <SelectPrimitive.Viewport className="p-1">
               {options.map((opt) => (
                 <SelectPrimitive.Item
@@ -401,7 +402,7 @@ export function MultiSelect({
       {label && <Label>{label}</Label>}
       <div
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full min-h-[44px] py-1 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-wrap gap-1.5 items-center justify-between cursor-pointer focus:ring-2 focus:ring-indigo-500"
+        className="w-full min-h-[44px] py-1 px-3.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-wrap gap-1.5 items-center justify-between cursor-pointer focus:ring-2 focus:ring-indigo-500"
       >
         {selected.length === 0 ? (
           <span className="text-sm text-slate-400">{placeholder}</span>
@@ -433,7 +434,7 @@ export function MultiSelect({
       </div>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 p-1">
+        <div className="absolute top-full left-0 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md shadow-lg z-50 p-1">
           {options.map((opt) => {
             const isSel = selected.includes(opt.value);
             return (
@@ -501,12 +502,12 @@ export function Autocomplete({
             setFilter(e.target.value);
             setIsOpen(true);
           }}
-          className="w-full h-11 px-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full h-11 px-3.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
       </div>
 
       {isOpen && matched.length > 0 && (
-        <div className="absolute top-full left-0 mt-2 w-full max-h-48 overflow-y-auto bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg z-50 p-1">
+        <div className="absolute top-full left-0 mt-2 w-full max-h-48 overflow-y-auto bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-md shadow-lg z-50 p-1">
           {matched.map((opt) => (
             <div
               key={opt.value}
@@ -545,7 +546,7 @@ export function DatePicker({
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full h-11 pl-10 pr-3.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
       </div>
     </div>
@@ -570,7 +571,7 @@ export function TimePicker({
           type="time"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-11 pl-10 pr-3.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+          className="w-full h-11 pl-10 pr-3.5 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
         />
       </div>
     </div>
@@ -616,8 +617,8 @@ export function FileUpload({ label, onFileSelect, accept }: FileUploadProps) {
           className="hidden"
         />
         {file ? (
-          <div className="flex items-center gap-3 w-full justify-between px-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 py-2.5 rounded-xl">
-            <span className="text-sm font-semibold truncate text-slate-700 dark:text-slate-350 max-w-[200px]">
+          <div className="flex items-center gap-3 w-full justify-between px-2 bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 py-2.5 rounded-md">
+            <span className="text-sm font-semibold truncate text-slate-700 dark:text-slate-300 max-w-[200px]">
               {file.name}
             </span>
             <button
@@ -708,7 +709,7 @@ export function ColorPicker({
   return (
     <div className="space-y-1.5 text-left w-fit">
       {label && <Label>{label}</Label>}
-      <div className="flex items-center gap-2 p-1 border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-950">
+      <div className="flex items-center gap-2 p-1 border border-slate-200 dark:border-slate-800 rounded-md bg-white dark:bg-slate-950">
         <input
           type="color"
           value={value}

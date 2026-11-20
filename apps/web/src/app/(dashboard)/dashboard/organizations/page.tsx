@@ -10,7 +10,6 @@ import {
   OrgInvitationsList,
   SettingsCard,
 } from "@devlaunchkit/ui";
-import { UserPlus, Sparkles } from "lucide-react";
 
 export default function OrganizationsPage() {
   const [activeOrgId, setActiveOrgId] = React.useState("org_1");
@@ -26,26 +25,26 @@ export default function OrganizationsPage() {
       name: "Alex Admin",
       email: "alex@saas.com",
       role: "admin",
-      joinedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      joinedAt: new Date("2026-06-12T12:00:00Z"),
     },
     {
       id: "mem_2",
       name: "Blake Engineer",
       email: "blake@saas.com",
       role: "member",
-      joinedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
+      joinedAt: new Date("2026-06-27T12:00:00Z"),
     },
   ];
 
   const [members, setMembers] = React.useState(initialMembers);
   const [invitations, setInvitations] = React.useState([
-    { id: "inv_1", email: "charlie@saas.com", role: "member", createdAt: new Date() },
+    {
+      id: "inv_1",
+      email: "charlie@saas.com",
+      role: "member",
+      createdAt: new Date("2026-07-12T12:00:00Z"),
+    },
   ]);
-
-  const handleSwitchOrg = (id: string) => {
-    setActiveOrgId(id);
-    alert(`Switched active organization to ${id}!`);
-  };
 
   const handleRemoveMember = (id: string) => {
     setMembers((prev) => prev.filter((m) => m.id !== id));
@@ -60,36 +59,41 @@ export default function OrganizationsPage() {
       <ContentWrapper>
         <PageHeader
           title="Organization Workspaces"
-          description="Manage workspace organization switchers, member invites, and roles rosters."
+          description="Switch between sample workspaces and preview member management."
           actions={
-            <div className="flex items-center gap-2">
-              <OrgSwitcherPopover
-                organizations={orgs}
-                activeId={activeOrgId}
-                onSwitch={handleSwitchOrg}
-                onCreateNew={() => alert("Create organization modal!")}
-              />
-              <button className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-semibold text-white transition-colors">
-                <UserPlus className="h-4 w-4" />
-                Invite Member
-              </button>
-            </div>
+            <OrgSwitcherPopover
+              organizations={orgs}
+              activeId={activeOrgId}
+              onSwitch={setActiveOrgId}
+            />
           }
         />
 
         <div className="space-y-8">
           <SettingsCard
             title="Workspace Members Roster"
-            description="Manage users permitted to configure build targets and deploy containers."
+            description={`Members of ${orgs.find((org) => org.id === activeOrgId)?.name}.`}
           >
-            <OrgMembersList members={members} onRemoveMember={handleRemoveMember} />
+            {activeOrgId === "org_1" ? (
+              <OrgMembersList members={members} onRemoveMember={handleRemoveMember} />
+            ) : (
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                No sample members in this workspace.
+              </p>
+            )}
           </SettingsCard>
 
           <SettingsCard
             title="Pending Member Invitations"
-            description="View organization invitations sent by email that are waiting to be accepted."
+            description="Sample invitations awaiting a response."
           >
-            <OrgInvitationsList invitations={invitations} onRevokeInvite={handleRevokeInvite} />
+            {activeOrgId === "org_1" ? (
+              <OrgInvitationsList invitations={invitations} onRevokeInvite={handleRevokeInvite} />
+            ) : (
+              <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                No pending invitations.
+              </p>
+            )}
           </SettingsCard>
         </div>
       </ContentWrapper>

@@ -9,7 +9,7 @@ import {
   index,
   numeric,
 } from "drizzle-orm/pg-core";
-import { profiles } from "./core";
+import { profiles } from "./core.js";
 
 // 1. AI Models Catalog
 export const aiModels = pgTable("ai_models", {

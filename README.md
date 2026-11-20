@@ -198,17 +198,18 @@ Secure control panel to manage users, track billing, toggle settings, and read u
 
 ## Quick Start
 
-Requires Node.js `v24+` and pnpm `v9+`.
+Requires Node.js 20 or newer and pnpm 9.15.0.
 
 ```bash
-git clone https://github.com/devlaunchkit/devlaunchkit.git
-cd devlaunchkit
-pnpm install
-pnpm bootstrap
+git clone https://github.com/rmncore/DevLaunchKit.git
+cd DevLaunchKit
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
 Production build: `pnpm build`
+
+See the [quick start](docs/QUICK_START.md) for PostgreSQL, migrations, and the optional admin demo.
 
 ---
 

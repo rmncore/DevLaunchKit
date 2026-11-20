@@ -4,7 +4,7 @@ export const sendEmailSchema = z.object({
   to: z.string().email("Valid recipient email is required"),
   subject: z.string().min(1, "Subject cannot be empty"),
   templateName: z.string().min(1, "Template name is required"),
-  variables: z.record(z.unknown()).optional(),
+  variables: z.record(z.string(), z.unknown()).optional(),
 });
 
 export const sendNotificationSchema = z.object({
@@ -26,14 +26,14 @@ export const scheduleEmailSchema = z.object({
   time: z.coerce.date(),
   templateName: z.string().min(1, "Template name is required"),
   to: z.string().email("Valid recipient email is required"),
-  variables: z.record(z.unknown()).optional(),
+  variables: z.record(z.string(), z.unknown()).optional(),
 });
 
 export function validatePayload<T>(schema: z.Schema<T>, data: unknown): T {
   const result = schema.safeParse(data);
   if (!result.success) {
     throw new Error(
-      `Communication validation failed: ${result.error.errors.map((e) => e.message).join(", ")}`
+      `Communication validation failed: ${result.error.issues.map((e) => e.message).join(", ")}`
     );
   }
   return result.data;

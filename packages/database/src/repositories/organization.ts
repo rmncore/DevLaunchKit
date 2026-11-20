@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { Organization, InsertOrganization, Profile } from "../types";
-import { organizations, organizationMembers, teams, teamMembers, roles } from "../schema";
+import { BaseRepository } from "./base.js";
+import { Organization, InsertOrganization, Profile } from "../types/index.js";
+import { organizations, organizationMembers, teams, teamMembers, roles } from "../schema/index.js";
 import { eq, and } from "drizzle-orm";
 
 export class OrganizationRepository extends BaseRepository<

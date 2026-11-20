@@ -14,7 +14,7 @@ interface SettingsData {
 }
 
 async function getSystemSettings(): Promise<SettingsData> {
-  const isMock = await isDatabaseMockMode();
+  const isMock = isDatabaseMockMode();
 
   if (isMock) {
     // Read from cookies in mock mode if available
@@ -37,30 +37,19 @@ async function getSystemSettings(): Promise<SettingsData> {
     };
   }
 
-  try {
-    const dbSettings = await db.select().from(systemSettings);
-    const lookup = (key: string, defVal: string) => {
-      const row = dbSettings.find((s) => s.key === key);
-      return row ? String(row.value) : defVal;
-    };
+  const dbSettings = await db.select().from(systemSettings);
+  const lookup = (key: string, defVal: string) => {
+    const row = dbSettings.find((s) => s.key === key);
+    return row ? String(row.value) : defVal;
+  };
 
-    return {
-      appName: lookup("app_name", "DevLaunchKit"),
-      logoUrl: lookup("logo_url", "https://logo.vercel.sh/launchkit"),
-      supportEmail: lookup("support_email", "support@devlaunchkit.com"),
-      maintenanceMode: lookup("maintenance_mode", "false") === "true",
-      allowedDomains: lookup("allowed_domains", "*.devlaunchkit.com, localhost:3000"),
-    };
-  } catch (error) {
-    console.error("Drizzle settings fetch failed, using fallback:", error);
-    return {
-      appName: "DevLaunchKit Sandbox",
-      logoUrl: "https://logo.vercel.sh/launchkit",
-      supportEmail: "support@devlaunchkit.com",
-      maintenanceMode: false,
-      allowedDomains: "*.devlaunchkit.com, localhost:3000",
-    };
-  }
+  return {
+    appName: lookup("app_name", "DevLaunchKit"),
+    logoUrl: lookup("logo_url", "https://logo.vercel.sh/launchkit"),
+    supportEmail: lookup("support_email", "support@devlaunchkit.com"),
+    maintenanceMode: lookup("maintenance_mode", "false") === "true",
+    allowedDomains: lookup("allowed_domains", "*.devlaunchkit.com, localhost:3000"),
+  };
 }
 
 export default async function AdminSettingsPage() {
@@ -68,7 +57,7 @@ export default async function AdminSettingsPage() {
   try {
     await requireAdmin();
   } catch {
-    redirect("/");
+    redirect("/dashboard/admin");
   }
 
   const initialSettings = await getSystemSettings();

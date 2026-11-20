@@ -50,9 +50,9 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* General Settings */}
-      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
+      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
         <CardHeader className="border-b border-neutral-100 dark:border-neutral-800 pb-3">
-          <CardTitle className="text-sm font-extrabold uppercase tracking-wider text-neutral-400">
+          <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
             General Brand Settings
           </CardTitle>
           <CardDescription className="text-xs text-neutral-400">
@@ -120,9 +120,9 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
       </Card>
 
       {/* System Configurations */}
-      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
+      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg">
         <CardHeader className="border-b border-neutral-100 dark:border-neutral-800 pb-3">
-          <CardTitle className="text-sm font-extrabold uppercase tracking-wider text-neutral-400">
+          <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
             System Parameters
           </CardTitle>
           <CardDescription className="text-xs text-neutral-400">
@@ -136,7 +136,7 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
               <div className="font-semibold text-sm text-neutral-800 dark:text-neutral-200">
                 Maintenance Mode
               </div>
-              <div className="text-[11px] text-neutral-400">
+              <div className="text-xs text-neutral-400">
                 Lock the main app with a scheduled maintenance block.
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
               required
               className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:outline-none text-neutral-900 dark:text-white"
             />
-            <p className="text-[10px] text-neutral-400">
+            <p className="text-xs text-neutral-400">
               Comma-separated list of hosts permitted to invoke key REST gateways.
             </p>
           </div>
@@ -184,7 +184,7 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
         <button
           type="submit"
           disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white transition-all shadow-sm hover:shadow active:scale-95 disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 px-4 py-2.5 text-xs font-bold text-white transition-all hover:shadow active:scale-95 disabled:opacity-50"
         >
           <Save className="h-4 w-4" />
           {saving ? "Saving Changes..." : "Save Settings"}

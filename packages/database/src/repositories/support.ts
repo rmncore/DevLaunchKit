@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { SupportTicket, InsertSupportTicket } from "../types";
-import { supportTickets, announcements, feedback } from "../schema";
+import { BaseRepository } from "./base.js";
+import { SupportTicket, InsertSupportTicket } from "../types/index.js";
+import { supportTickets, announcements, feedback } from "../schema/index.js";
 import { eq, and, sql } from "drizzle-orm";
 
 export class SupportRepository extends BaseRepository<

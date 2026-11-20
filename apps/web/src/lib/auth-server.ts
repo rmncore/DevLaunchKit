@@ -1,5 +1,5 @@
 import { cookies } from "next/headers";
-import { db, checkDatabaseHealth, profiles, sessions } from "@devlaunchkit/database";
+import { db, profiles, sessions } from "@devlaunchkit/database";
 import { eq } from "drizzle-orm";
 
 export interface AdminUser {
@@ -24,20 +24,11 @@ export interface AuthContext {
   session: AdminSession | null;
 }
 
-// Check if we are in mock mode (development without database configured)
-export async function isDatabaseMockMode(): Promise<boolean> {
-  const url = process.env.DATABASE_URL;
-  if (!url || url.includes("your_key") || url.includes("localhost:5432/launchkit")) {
-    // If DATABASE_URL is default, check database health to be absolutely sure
-    try {
-      const health = await checkDatabaseHealth();
-      return health.status !== "healthy";
-    } catch {
-      return true;
-    }
-  }
-  return false;
+export function isDatabaseMockMode(): boolean {
+  return process.env.NODE_ENV === "development" && process.env.DEVLAUNCHKIT_ADMIN_DEMO === "true";
 }
+
+export const DEMO_ADMIN_SESSION = "tok_mock_admin";
 
 // Get standard mock admin user
 export const MOCK_ADMIN_USER: AdminUser = {
@@ -53,50 +44,28 @@ export const MOCK_ADMIN_USER: AdminUser = {
 export async function getSessionContext(): Promise<AuthContext> {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get("auth_session")?.value;
-  const mockRole = cookieStore.get("mock_role")?.value;
 
-  // 1. Check if mock mode is active
-  if (await isDatabaseMockMode()) {
-    if (sessionToken === "tok_mock_admin" || mockRole === "admin") {
-      return {
-        isAuthenticated: true,
-        user: MOCK_ADMIN_USER,
-        session: {
-          id: "sess_mock_admin",
-          token: "tok_mock_admin",
-          userId: MOCK_ADMIN_USER.id,
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-      };
-    }
+  const signedOut = { isAuthenticated: false, user: null, session: null };
 
-    // Default user session if token is present but not admin
-    if (sessionToken) {
-      return {
-        isAuthenticated: true,
-        user: {
-          id: "u_dev",
-          email: "user@devlaunchkit.com",
-          name: "Test Developer",
-          role: "user",
-          status: "active",
-          avatarUrl: "https://avatar.vercel.sh/test-user",
-        },
-        session: {
-          id: "sess_mock_dev",
-          token: sessionToken,
-          userId: "u_dev",
-          expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-        },
-      };
-    }
-
-    return { isAuthenticated: false, user: null, session: null };
+  if (!sessionToken) {
+    return signedOut;
   }
 
-  // 2. Database Mode
-  if (!sessionToken) {
-    return { isAuthenticated: false, user: null, session: null };
+  if (isDatabaseMockMode()) {
+    if (sessionToken !== DEMO_ADMIN_SESSION) {
+      return signedOut;
+    }
+
+    return {
+      isAuthenticated: true,
+      user: MOCK_ADMIN_USER,
+      session: {
+        id: "sess_mock_admin",
+        token: DEMO_ADMIN_SESSION,
+        userId: MOCK_ADMIN_USER.id,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    };
   }
 
   try {
@@ -111,17 +80,17 @@ export async function getSessionContext(): Promise<AuthContext> {
       .limit(1);
 
     const match = results[0];
-    if (!match) {
-      return { isAuthenticated: false, user: null, session: null };
+    if (!match || match.profile.deletedAt) {
+      return signedOut;
     }
 
     // Check expiry
-    if (new Date() > new Date(match.session.expiresAt)) {
+    if (match.session.expiresAt.getTime() <= Date.now()) {
       // Clean up expired session asynchronously
       db.delete(sessions)
         .where(eq(sessions.id, match.session.id))
         .catch(() => {});
-      return { isAuthenticated: false, user: null, session: null };
+      return signedOut;
     }
 
     return {
@@ -143,7 +112,7 @@ export async function getSessionContext(): Promise<AuthContext> {
     };
   } catch (error) {
     console.error("Failed to fetch session context:", error);
-    return { isAuthenticated: false, user: null, session: null };
+    return signedOut;
   }
 }
 

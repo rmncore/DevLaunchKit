@@ -1,109 +1,116 @@
 "use client";
 
-import * as React from "react";
-import { PageContainer, ContentWrapper, PageHeader, SettingsCard } from "@devlaunchkit/ui";
-import { Key, Copy, Check, Eye, EyeOff, Plus, Trash } from "lucide-react";
+import { useState } from "react";
+import { ContentWrapper, PageContainer, PageHeader, SettingsCard } from "@devlaunchkit/ui";
+import { Copy, Eye, EyeOff, Plus, Trash } from "lucide-react";
+
+interface SampleKey {
+  id: number;
+  name: string;
+  value: string;
+}
 
 export default function ApiKeysPage() {
-  const [keys, setKeys] = React.useState([
-    { id: "1", name: "Production Gateway Key", token: "dlk_live_51P0...d8f2", created: new Date() },
-    {
-      id: "2",
-      name: "Staging Test Webhook",
-      token: "dlk_test_51P0...a871",
-      created: new Date(Date.now() - 86400000),
-    },
+  const [keys, setKeys] = useState<SampleKey[]>([
+    { id: 1, name: "Gateway example", value: "dlk_demo_gateway" },
+    { id: 2, name: "Webhook example", value: "dlk_demo_webhook" },
   ]);
+  const [nextId, setNextId] = useState(3);
+  const [visibleKey, setVisibleKey] = useState<number | null>(null);
+  const [status, setStatus] = useState("");
 
-  const [visibleKeys, setVisibleKeys] = React.useState<Record<string, boolean>>({});
+  function addKey() {
+    setKeys((current) => [
+      ...current,
+      { id: nextId, name: `Sample key ${nextId}`, value: `dlk_demo_${nextId}` },
+    ]);
+    setNextId(nextId + 1);
+    setStatus("Sample key added.");
+  }
 
-  const toggleVisibility = (id: string) => {
-    setVisibleKeys((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const handleCopy = (token: string) => {
-    navigator.clipboard.writeText(token);
-    alert("Token copied to clipboard!");
-  };
-
-  const handleDelete = (id: string) => {
-    setKeys((prev) => prev.filter((k) => k.id !== id));
-  };
+  async function copyKey(key: SampleKey) {
+    try {
+      await navigator.clipboard.writeText(key.value);
+      setStatus(`Copied ${key.name}.`);
+    } catch {
+      setVisibleKey(key.id);
+      setStatus("Clipboard unavailable. Copy the displayed value manually.");
+    }
+  }
 
   return (
     <PageContainer>
       <ContentWrapper>
         <PageHeader
-          title="API Configuration Keys"
-          description="Generate and manage secure authentication tokens for programmatic API access."
+          title="API credentials"
+          description="Try the key management interface with sample values."
           actions={
-            <button className="inline-flex items-center gap-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors">
-              <Plus className="h-4 w-4" />
-              Generate API Key
+            <button
+              type="button"
+              onClick={addKey}
+              className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
+            >
+              <Plus className="size-4" aria-hidden="true" /> Add sample key
             </button>
           }
         />
-
         <SettingsCard
-          title="Programmatic Access Credentials"
-          description="Do not share these credentials. Use webhook tokens only in secure server backends."
+          title="Sample keys"
+          description="These values are for previewing the interface and cannot authorize API requests."
         >
-          <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden bg-white dark:bg-neutral-900">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-neutral-50 dark:bg-neutral-800/40 border-b border-neutral-200 dark:border-neutral-800">
-                  <th className="px-4 py-2.5 text-xs font-semibold text-neutral-500">Name</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-neutral-500">Token</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-neutral-500">Created</th>
-                  <th className="px-4 py-2.5 text-xs font-semibold text-neutral-500 text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-                {keys.map((key) => {
-                  const isVisible = visibleKeys[key.id];
-                  return (
-                    <tr key={key.id} className="hover:bg-neutral-50/50">
-                      <td className="px-4 py-3 text-xs font-semibold text-neutral-950 dark:text-white">
-                        {key.name}
-                      </td>
-                      <td className="px-4 py-3 text-xs font-mono text-neutral-500">
-                        {isVisible ? key.token : "••••••••••••••••••••••••••••"}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-neutral-400">
-                        {new Date(key.created).toLocaleDateString()}
-                      </td>
-                      <td className="px-4 py-3 text-xs text-right space-x-1">
-                        <button
-                          onClick={() => toggleVisibility(key.id)}
-                          className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                        >
-                          {isVisible ? (
-                            <EyeOff className="h-3.5 w-3.5" />
-                          ) : (
-                            <Eye className="h-3.5 w-3.5" />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleCopy(key.token)}
-                          className="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                        >
-                          <Copy className="h-3.5 w-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(key.id)}
-                          className="p-1 rounded hover:bg-red-50 text-red-500 dark:hover:bg-red-950/20"
-                        >
-                          <Trash className="h-3.5 w-3.5" />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          {keys.length === 0 && (
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              No sample keys. Add one to try the controls.
+            </p>
+          )}
+          <ul className="divide-y divide-neutral-200 dark:divide-neutral-800">
+            {keys.map((key) => (
+              <li key={key.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">{key.name}</p>
+                  <code className="break-all text-xs text-neutral-600 dark:text-neutral-400">
+                    {visibleKey === key.id ? key.value : "••••••••••••"}
+                  </code>
+                </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    aria-label={`${visibleKey === key.id ? "Hide" : "Show"} ${key.name}`}
+                    onClick={() => setVisibleKey(visibleKey === key.id ? null : key.id)}
+                    className="grid size-10 place-items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  >
+                    {visibleKey === key.id ? (
+                      <EyeOff className="size-4" />
+                    ) : (
+                      <Eye className="size-4" />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Copy ${key.name}`}
+                    onClick={() => copyKey(key)}
+                    className="grid size-10 place-items-center rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  >
+                    <Copy className="size-4" />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Remove ${key.name}`}
+                    onClick={() => {
+                      setKeys((current) => current.filter((entry) => entry.id !== key.id));
+                      setStatus(`Removed ${key.name}.`);
+                    }}
+                    className="grid size-10 place-items-center rounded-lg text-red-700 hover:bg-red-50 dark:text-red-300 dark:hover:bg-red-950/40"
+                  >
+                    <Trash className="size-4" />
+                  </button>
+                </div>
+              </li>
+            ))}
+          </ul>
+          <p className="text-sm text-neutral-600 dark:text-neutral-400" role="status">
+            {status}
+          </p>
         </SettingsCard>
       </ContentWrapper>
     </PageContainer>

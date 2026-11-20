@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { Subscription, InsertSubscription } from "../types";
-import { subscriptions, prices, products, credits, usageTracking, invoices } from "../schema";
+import { BaseRepository } from "./base.js";
+import { Subscription, InsertSubscription } from "../types/index.js";
+import { subscriptions, prices, products, credits, usageTracking, invoices } from "../schema/index.js";
 import { eq, and, sql } from "drizzle-orm";
 
 export class SubscriptionRepository extends BaseRepository<

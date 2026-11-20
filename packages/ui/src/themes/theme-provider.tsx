@@ -28,29 +28,40 @@ export function ThemeProvider({
   storageKey = "launchkit-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setThemeState] = useState<Theme>(() =>
-    typeof window !== "undefined"
-      ? (localStorage.getItem(storageKey) as Theme) || defaultTheme
-      : defaultTheme
-  );
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
 
   useEffect(() => {
-    const root = window.document.documentElement;
-    root.classList.remove("light", "dark");
-
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light";
-      root.classList.add(systemTheme);
-      return;
+    try {
+      const stored = localStorage.getItem(storageKey);
+      if (stored === "light" || stored === "dark" || stored === "system") {
+        setThemeState(stored);
+      }
+    } catch {
+      // The theme can still be changed for this page when storage is unavailable.
     }
+  }, [storageKey]);
 
-    root.classList.add(theme);
+  useEffect(() => {
+    const root = document.documentElement;
+    const preferred = window.matchMedia("(prefers-color-scheme: dark)");
+    const applyTheme = () => {
+      const dark = theme === "dark" || (theme === "system" && preferred.matches);
+      root.classList.toggle("dark", dark);
+      root.classList.toggle("light", !dark);
+    };
+    applyTheme();
+    if (theme === "system") {
+      preferred.addEventListener("change", applyTheme);
+      return () => preferred.removeEventListener("change", applyTheme);
+    }
   }, [theme]);
 
   const setTheme = (theme: Theme) => {
-    localStorage.setItem(storageKey, theme);
+    try {
+      localStorage.setItem(storageKey, theme);
+    } catch {
+      // Keep the selected theme in memory.
+    }
     setThemeState(theme);
   };
 

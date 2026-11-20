@@ -22,9 +22,11 @@ import {
   prices,
   products,
 } from "@devlaunchkit/database";
-import { and, or, like, eq, count, desc, asc } from "drizzle-orm";
+import { and, or, ilike, eq, count, desc, asc, isNull, sql } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import AdminActionButton from "../action-button";
+import { demoUsers, type DisplayUser } from "./demo-users";
 import {
   suspendUserAction,
   unsuspendUserAction,
@@ -43,18 +45,6 @@ interface SearchParams {
 }
 
 // User shape representing display fields
-interface DisplayUser {
-  id: string;
-  name: string;
-  email: string;
-  avatarUrl: string | null;
-  provider: string;
-  role: string;
-  plan: string;
-  status: string;
-  createdAt: string;
-}
-
 export default async function AdminUsersPage({
   searchParams,
 }: {
@@ -64,7 +54,7 @@ export default async function AdminUsersPage({
   try {
     await requireAdmin();
   } catch {
-    redirect("/");
+    redirect("/dashboard/admin");
   }
 
   const params = await searchParams;
@@ -73,109 +63,22 @@ export default async function AdminUsersPage({
   const filterStatus = params.status || "";
   const sortField = params.sort || "createdAt";
   const sortOrder = params.order || "desc";
-  const page = Number(params.page) || 1;
+  const requestedPage = Number(params.page);
+  const page =
+    Number.isSafeInteger(requestedPage) && requestedPage > 0 && requestedPage <= 100000
+      ? requestedPage
+      : 1;
   const limit = 8;
   const offset = (page - 1) * limit;
 
-  const isMock = await isDatabaseMockMode();
+  const isMock = isDatabaseMockMode();
   let users: DisplayUser[] = [];
   let totalCount = 0;
 
   if (isMock) {
     // 2. Mock mode: generate and filter/sort/paginate mock users in-memory
-    const mockUsers: DisplayUser[] = [
-      {
-        id: "u_1",
-        name: "Alice Vance",
-        email: "alice.vance@clerk.com",
-        avatarUrl: "https://avatar.vercel.sh/alice",
-        provider: "clerk",
-        role: "admin",
-        plan: "Enterprise Plan",
-        status: "active",
-        createdAt: "2026-01-10T12:00:00Z",
-      },
-      {
-        id: "u_2",
-        name: "Bob Carter",
-        email: "bob.carter@gmail.com",
-        avatarUrl: "https://avatar.vercel.sh/bob",
-        provider: "google",
-        role: "user",
-        plan: "Pro Plan",
-        status: "active",
-        createdAt: "2026-03-15T14:30:00Z",
-      },
-      {
-        id: "u_3",
-        name: "Charlie Ding",
-        email: "charlie@stripe.dev",
-        avatarUrl: "https://avatar.vercel.sh/charlie",
-        provider: "github",
-        role: "user",
-        plan: "Pro Plan",
-        status: "suspended",
-        createdAt: "2026-04-20T09:15:00Z",
-      },
-      {
-        id: "u_4",
-        name: "Dave Miller",
-        email: "dave.miller@yahoo.com",
-        avatarUrl: "https://avatar.vercel.sh/dave",
-        provider: "email",
-        role: "user",
-        plan: "Free Plan",
-        status: "active",
-        createdAt: "2026-05-02T10:45:00Z",
-      },
-      {
-        id: "u_5",
-        name: "Emma Watson",
-        email: "emma.watson@gmail.com",
-        avatarUrl: "https://avatar.vercel.sh/emma",
-        provider: "google",
-        role: "user",
-        plan: "Enterprise Plan",
-        status: "active",
-        createdAt: "2026-05-18T16:20:00Z",
-      },
-      {
-        id: "u_6",
-        name: "Frank Lampard",
-        email: "frank@chelsea.fc",
-        avatarUrl: "https://avatar.vercel.sh/frank",
-        provider: "email",
-        role: "user",
-        plan: "Free Plan",
-        status: "suspended",
-        createdAt: "2026-06-01T11:00:00Z",
-      },
-      {
-        id: "u_7",
-        name: "Grace Hopper",
-        email: "grace.hopper@navy.mil",
-        avatarUrl: "https://avatar.vercel.sh/grace",
-        provider: "github",
-        role: "admin",
-        plan: "Pro Plan",
-        status: "active",
-        createdAt: "2026-06-12T08:30:00Z",
-      },
-      {
-        id: "u_8",
-        name: "Henry Cavill",
-        email: "henry@superman.com",
-        avatarUrl: "https://avatar.vercel.sh/henry",
-        provider: "email",
-        role: "user",
-        plan: "Free Plan",
-        status: "active",
-        createdAt: "2026-07-04T13:40:00Z",
-      },
-    ];
-
     // Filter
-    const filtered = mockUsers.filter((u) => {
+    const filtered = demoUsers.filter((u) => {
       const matchSearch =
         u.name.toLowerCase().includes(q.toLowerCase()) ||
         u.email.toLowerCase().includes(q.toLowerCase());
@@ -197,73 +100,83 @@ export default async function AdminUsersPage({
     users = filtered.slice(offset, offset + limit);
   } else {
     // 3. Database mode: query postgres using Drizzle ORM
-    try {
-      const conditions = [];
-      if (q) {
-        conditions.push(or(like(profiles.name, `%${q}%`), like(profiles.email, `%${q}%`)));
-      }
-      if (filterRole) {
-        conditions.push(eq(profiles.role, filterRole));
-      }
-      if (filterStatus) {
-        conditions.push(eq(profiles.status, filterStatus));
-      }
-
-      const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-
-      // Fetch count
-      const [countResult] = await db.select({ val: count() }).from(profiles).where(whereClause);
-      totalCount = countResult.val;
-
-      // Resolve sort order
-      let orderExpr = desc(profiles.createdAt);
-      if (sortField === "name") {
-        orderExpr = sortOrder === "asc" ? asc(profiles.name) : desc(profiles.name);
-      } else if (sortField === "email") {
-        orderExpr = sortOrder === "asc" ? asc(profiles.email) : desc(profiles.email);
-      } else if (sortField === "createdAt") {
-        orderExpr = sortOrder === "asc" ? asc(profiles.createdAt) : desc(profiles.createdAt);
-      }
-
-      // Query database
-      const dbUsers = await db
-        .select({
-          id: profiles.id,
-          name: profiles.name,
-          email: profiles.email,
-          avatarUrl: profiles.avatarUrl,
-          role: profiles.role,
-          status: profiles.status,
-          createdAt: profiles.createdAt,
-          provider: oauthAccounts.provider,
-          plan: products.name,
-        })
-        .from(profiles)
-        .leftJoin(oauthAccounts, eq(profiles.id, oauthAccounts.profileId))
-        .leftJoin(subscriptions, eq(profiles.id, subscriptions.userId))
-        .leftJoin(prices, eq(subscriptions.priceId, prices.id))
-        .leftJoin(products, eq(prices.productId, products.id))
-        .where(whereClause)
-        .orderBy(orderExpr)
-        .limit(limit)
-        .offset(offset);
-
-      users = dbUsers.map((u) => ({
-        id: u.id,
-        name: u.name || "User",
-        email: u.email,
-        avatarUrl: u.avatarUrl,
-        provider: u.provider || "email",
-        role: u.role,
-        plan: u.plan || "Free Plan",
-        status: u.status,
-        createdAt: u.createdAt.toISOString(),
-      }));
-    } catch (e) {
-      console.error("Drizzle users query failed, using empty states:", e);
-      totalCount = 0;
-      users = [];
+    const conditions = [isNull(profiles.deletedAt)];
+    if (filterRole) {
+      conditions.push(eq(profiles.role, filterRole));
     }
+    if (filterStatus) {
+      conditions.push(eq(profiles.status, filterStatus));
+    }
+
+    const whereClause = and(
+      ...conditions,
+      q ? or(ilike(profiles.name, `%${q}%`), ilike(profiles.email, `%${q}%`)) : undefined
+    );
+
+    // Fetch count
+    const [countResult] = await db.select({ val: count() }).from(profiles).where(whereClause);
+    totalCount = countResult.val;
+
+    // Resolve sort order
+    let orderExpr = desc(profiles.createdAt);
+    if (sortField === "name") {
+      orderExpr = sortOrder === "asc" ? asc(profiles.name) : desc(profiles.name);
+    } else if (sortField === "email") {
+      orderExpr = sortOrder === "asc" ? asc(profiles.email) : desc(profiles.email);
+    } else if (sortField === "createdAt") {
+      orderExpr = sortOrder === "asc" ? asc(profiles.createdAt) : desc(profiles.createdAt);
+    }
+
+    const provider = db
+      .select({ name: oauthAccounts.provider })
+      .from(oauthAccounts)
+      .where(eq(oauthAccounts.profileId, profiles.id))
+      .orderBy(desc(oauthAccounts.createdAt), asc(oauthAccounts.id))
+      .limit(1)
+      .as("latest_provider");
+
+    const activePlan = db
+      .select({ name: products.name })
+      .from(subscriptions)
+      .innerJoin(prices, eq(subscriptions.priceId, prices.id))
+      .innerJoin(products, eq(prices.productId, products.id))
+      .where(and(eq(subscriptions.userId, profiles.id), eq(subscriptions.status, "active")))
+      .orderBy(desc(subscriptions.createdAt), asc(subscriptions.id))
+      .limit(1)
+      .as("latest_plan");
+
+    // Query database
+    const dbUsers = await db
+      .select({
+        id: profiles.id,
+        name: profiles.name,
+        email: profiles.email,
+        avatarUrl: profiles.avatarUrl,
+        role: profiles.role,
+        status: profiles.status,
+        createdAt: profiles.createdAt,
+        provider: provider.name,
+        plan: activePlan.name,
+      })
+      .from(profiles)
+      .leftJoinLateral(provider, sql`true`)
+      .leftJoinLateral(activePlan, sql`true`)
+      .where(whereClause)
+      .orderBy(orderExpr, asc(profiles.id))
+      .limit(limit)
+      .offset(offset);
+
+    users = dbUsers.map((u) => ({
+      id: u.id,
+      name: u.name || "User",
+      email: u.email,
+      avatarUrl: u.avatarUrl,
+      provider: u.provider || "email",
+      role: u.role,
+      plan: u.plan || "Free Plan",
+      status: u.status,
+      createdAt: u.createdAt.toISOString(),
+    }));
   }
 
   const totalPages = Math.ceil(totalCount / limit) || 1;
@@ -298,7 +211,7 @@ export default async function AdminUsersPage({
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-4 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-neutral-900 p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg">
         {/* Search */}
         <form className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-neutral-400" />
@@ -342,7 +255,7 @@ export default async function AdminUsersPage({
       </div>
 
       {/* Users Table */}
-      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm border-collapse">
             <thead>
@@ -403,7 +316,7 @@ export default async function AdminUsersPage({
                             .join("")
                             .substring(0, 2)}
                         />
-                        <span className="font-semibold text-neutral-850 dark:text-neutral-100">
+                        <span className="font-semibold text-neutral-800 dark:text-neutral-100">
                           {user.name}
                         </span>
                       </div>
@@ -445,97 +358,47 @@ export default async function AdminUsersPage({
                         <Eye className="h-4 w-4" />
                       </Link>
 
-                      {/* Suspend / Unsuspend buttons */}
-                      {user.status === "active" ? (
-                        <form
-                          action={async () => {
-                            "use server";
-                            await suspendUserAction(user.id);
-                          }}
-                          className="inline"
-                        >
-                          <button
-                            type="submit"
-                            className="p-1 text-amber-500 hover:text-amber-700"
-                            title="Suspend user"
+                      {!isMock && (
+                        <>
+                          {user.status === "active" ? (
+                            <AdminActionButton
+                              action={suspendUserAction.bind(null, user.id)}
+                              label="Suspend user"
+                            >
+                              <ShieldAlert className="size-4" />
+                            </AdminActionButton>
+                          ) : (
+                            <AdminActionButton
+                              action={unsuspendUserAction.bind(null, user.id)}
+                              label="Reactivate user"
+                            >
+                              <CheckCircle className="size-4" />
+                            </AdminActionButton>
+                          )}
+                          {user.role === "admin" ? (
+                            <AdminActionButton
+                              action={demoteAdminAction.bind(null, user.id)}
+                              label="Demote admin"
+                            >
+                              <UserX className="size-4" />
+                            </AdminActionButton>
+                          ) : (
+                            <AdminActionButton
+                              action={promoteToAdminAction.bind(null, user.id)}
+                              label="Promote to admin"
+                            >
+                              <Shield className="size-4" />
+                            </AdminActionButton>
+                          )}
+                          <AdminActionButton
+                            action={deleteUserAction.bind(null, user.id)}
+                            label="Delete account"
+                            confirmation="Delete this user profile?"
                           >
-                            <ShieldAlert className="h-4 w-4" />
-                          </button>
-                        </form>
-                      ) : (
-                        <form
-                          action={async () => {
-                            "use server";
-                            await unsuspendUserAction(user.id);
-                          }}
-                          className="inline"
-                        >
-                          <button
-                            type="submit"
-                            className="p-1 text-green-500 hover:text-green-700"
-                            title="Reactivate user"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                          </button>
-                        </form>
+                            <Ban className="size-4" />
+                          </AdminActionButton>
+                        </>
                       )}
-
-                      {/* Role promote/demote buttons */}
-                      {user.role !== "admin" ? (
-                        <form
-                          action={async () => {
-                            "use server";
-                            await promoteToAdminAction(user.id);
-                          }}
-                          className="inline"
-                        >
-                          <button
-                            type="submit"
-                            className="p-1 text-indigo-500 hover:text-indigo-700"
-                            title="Promote to admin"
-                          >
-                            <Shield className="h-4 w-4" />
-                          </button>
-                        </form>
-                      ) : (
-                        <form
-                          action={async () => {
-                            "use server";
-                            await demoteAdminAction(user.id);
-                          }}
-                          className="inline"
-                        >
-                          <button
-                            type="submit"
-                            className="p-1 text-slate-400 hover:text-slate-600"
-                            title="Demote admin"
-                          >
-                            <UserX className="h-4 w-4" />
-                          </button>
-                        </form>
-                      )}
-
-                      {/* Delete button */}
-                      <form
-                        action={async () => {
-                          "use server";
-                          await deleteUserAction(user.id);
-                        }}
-                        className="inline"
-                        onSubmit={(e) => {
-                          if (!confirm("Are you sure you want to delete this user profile?")) {
-                            e.preventDefault();
-                          }
-                        }}
-                      >
-                        <button
-                          type="submit"
-                          className="p-1 text-rose-500 hover:text-rose-700"
-                          title="Delete account"
-                        >
-                          <Ban className="h-4 w-4" />
-                        </button>
-                      </form>
                     </td>
                   </tr>
                 ))
