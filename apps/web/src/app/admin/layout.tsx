@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { isDatabaseMockMode, requireAdmin } from "@/lib/auth-server";
-import { redirect } from "next/navigation";
+import { isDatabaseMockMode, requireAdminPage } from "@/lib/auth/session";
 import AdminShell from "./admin-shell";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
-  const admin = await requireAdmin().catch(() => redirect("/dashboard/admin"));
+  const admin = await requireAdminPage();
 
   return (
     <AdminShell userEmail={admin.email} demo={isDatabaseMockMode()}>

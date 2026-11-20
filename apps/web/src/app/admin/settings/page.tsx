@@ -1,7 +1,6 @@
 import * as React from "react";
-import { requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { requireAdminPage, isDatabaseMockMode } from "@/lib/auth/session";
 import { db, systemSettings } from "@devlaunchkit/database";
-import { redirect } from "next/navigation";
 import SettingsForm from "./settings-form";
 import { cookies } from "next/headers";
 
@@ -10,7 +9,6 @@ interface SettingsData {
   logoUrl: string;
   supportEmail: string;
   maintenanceMode: boolean;
-  allowedDomains: string;
 }
 
 async function getSystemSettings(): Promise<SettingsData> {
@@ -33,7 +31,6 @@ async function getSystemSettings(): Promise<SettingsData> {
       logoUrl: "https://logo.vercel.sh/launchkit",
       supportEmail: "support@devlaunchkit.com",
       maintenanceMode: false,
-      allowedDomains: "*.devlaunchkit.com, localhost:3000",
     };
   }
 
@@ -48,17 +45,11 @@ async function getSystemSettings(): Promise<SettingsData> {
     logoUrl: lookup("logo_url", "https://logo.vercel.sh/launchkit"),
     supportEmail: lookup("support_email", "support@devlaunchkit.com"),
     maintenanceMode: lookup("maintenance_mode", "false") === "true",
-    allowedDomains: lookup("allowed_domains", "*.devlaunchkit.com, localhost:3000"),
   };
 }
 
 export default async function AdminSettingsPage() {
-  // Authorize admin
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/dashboard/admin");
-  }
+  await requireAdminPage();
 
   const initialSettings = await getSystemSettings();
 

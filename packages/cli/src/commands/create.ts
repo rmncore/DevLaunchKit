@@ -1,93 +1,54 @@
-import * as fs from "fs";
-import * as path from "path";
+import { cpSync, mkdirSync, readdirSync, writeFileSync } from "node:fs";
+import { resolve, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-export function handleCreateCommand(projectName: string, shouldExit: boolean = true): void {
-  console.log(`\n🚀 [Scaffold] Initializing new SaaS application: "${projectName}"...`);
+const template = fileURLToPath(new URL("../../templates/nextjs/", import.meta.url));
 
-  const targetDir = path.resolve(process.cwd(), projectName);
+export function handleCreateCommand(projectName: string, shouldExit = true): void {
+  console.log(`Initializing new SaaS application: "${projectName}"`);
 
-  if (fs.existsSync(targetDir)) {
-    console.error(`❌ Directory "${projectName}" already exists.`);
-    if (shouldExit) {
-      process.exit(1);
-    }
+  if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(projectName)) {
+    console.error("Use a lowercase project name with letters, numbers, or hyphens.");
+    if (shouldExit) process.exitCode = 1;
     return;
   }
 
-  try {
-    // Create directory structure
-    fs.mkdirSync(targetDir, { recursive: true });
-    fs.mkdirSync(path.join(targetDir, "src"), { recursive: true });
+  const targetDir = resolve(process.cwd(), projectName);
 
-    // Write package.json
-    const packageJson = {
+  try {
+    mkdirSync(targetDir);
+    for (const entry of readdirSync(template)) {
+      cpSync(join(template, entry), join(targetDir, entry === "gitignore" ? ".gitignore" : entry), {
+        recursive: true,
+        force: false,
+        errorOnExist: true,
+      });
+    }
+    const manifest = {
       name: projectName,
       version: "0.1.0",
       private: true,
-      scripts: {
-        dev: "next dev",
-        build: "next build",
-        start: "next start",
-      },
-      dependencies: {
-        next: "^15.1.0",
-        react: "^19.0.0",
-        "react-dom": "^19.0.0",
-        "@devlaunchkit/ui": "workspace:*",
-        "@devlaunchkit/auth": "workspace:*",
-        "@devlaunchkit/payments": "workspace:*",
-        "@devlaunchkit/env": "workspace:*",
+      packageManager: "pnpm@9.15.0",
+      scripts: { dev: "next dev", build: "next build", start: "next start" },
+      dependencies: { next: "^15.5.29", react: "^19.3.0", "react-dom": "^19.3.0" },
+      devDependencies: {
+        "@types/node": "^22.20.1",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        typescript: "^5.9.3",
       },
     };
-    fs.writeFileSync(
-      path.join(targetDir, "package.json"),
-      JSON.stringify(packageJson, null, 2),
-      "utf8"
+    writeFileSync(join(targetDir, "package.json"), JSON.stringify(manifest, null, 2) + "\n");
+    writeFileSync(
+      join(targetDir, "README.md"),
+      `# ${projectName}\n\nRun \`pnpm install\` and \`pnpm dev\` to start developing.\n\nBuild with \`pnpm build\`.\n`
     );
-
-    // Write tsconfig.json
-    const tsconfigJson = {
-      extends: "../tsconfig.base.json",
-      compilerOptions: {
-        target: "ES2022",
-        lib: ["dom", "dom.iterable", "esnext"],
-        allowJs: true,
-        skipLibCheck: true,
-        strict: true,
-        noEmit: true,
-        esModuleInterop: true,
-        module: "esnext",
-        moduleResolution: "bundler",
-        resolveJsonModule: true,
-        isolatedModules: true,
-        jsx: "preserve",
-        incremental: true,
-      },
-      include: ["src/**/*"],
-    };
-    fs.writeFileSync(
-      path.join(targetDir, "tsconfig.json"),
-      JSON.stringify(tsconfigJson, null, 2),
-      "utf8"
+    console.log(`Created ${projectName}. Run cd ${projectName}, pnpm install, then pnpm dev.`);
+  } catch (error) {
+    console.error(
+      "Could not scaffold the project:",
+      error instanceof Error ? error.message : error
     );
-
-    // Write README.md
-    const readmeContent = `# ${projectName}\n\nThis application was scaffolded using the DevLaunchKit CLI.\n\n## Getting Started\n\n1. Install dependencies in root: \`pnpm install\`\n2. Copy environment variables: \`cp .env.example .env\`\n3. Run diagnostics: \`pnpm doctor\`\n4. Start dev server: \`pnpm dev\`\n`;
-    fs.writeFileSync(path.join(targetDir, "README.md"), readmeContent, "utf8");
-
-    // Write simple src/index.ts
-    const indexContent = `// ${projectName} Entrypoint\nexport const appName = "${projectName}";\n`;
-    fs.writeFileSync(path.join(targetDir, "src/index.ts"), indexContent, "utf8");
-
-    console.log("✔️ Scaffolded folder structure templates...");
-    console.log("✔️ Linked @devlaunchkit design tokens, billing client, and auth core packages...");
-    console.log(
-      `\n🎉 Successfully created SaaS project! Run:\n   cd ${projectName}\n   pnpm install\n`
-    );
-  } catch (error: any) {
-    console.error(`❌ Failed to scaffold project:`, error.message || error);
-    if (shouldExit) {
-      process.exit(1);
-    }
+    if (shouldExit) process.exitCode = 1;
   }
 }

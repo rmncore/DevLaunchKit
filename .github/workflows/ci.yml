@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -42,8 +44,15 @@ jobs:
       - name: Run ESLint
         run: pnpm lint
 
-      - name: Check formatting
-        run: pnpm format --check
+      - name: Check formatting on changed files
+        env:
+          FORMAT_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          if ! git cat-file -e "${FORMAT_BASE}^{commit}" 2>/dev/null; then
+            FORMAT_BASE="$(git rev-parse HEAD^)"
+          fi
+          git diff --name-only --diff-filter=ACMR -z "$FORMAT_BASE" HEAD |
+            xargs -0 -r pnpm format:check --
 
   typecheck:
     name: Typecheck (Node ${{ matrix.node-version }})

@@ -31,7 +31,14 @@ test("CLI Create command simulation", () => {
     handleCreateCommand("saas-demo", false);
     assert.ok(logOutput.includes("Initializing new SaaS application"));
     assert.ok(logOutput.includes("saas-demo"));
-    assert.ok(fs.existsSync("saas-demo/package.json"));
+    assert.ok(fs.existsSync("saas-demo/src/app/page.tsx"));
+    const manifest = JSON.parse(fs.readFileSync("saas-demo/package.json", "utf8"));
+    assert.equal(manifest.scripts.build, "next build");
+    assert.ok(
+      Object.values(manifest.dependencies).every(
+        (version) => !String(version).startsWith("workspace:")
+      )
+    );
   } finally {
     console.log = originalLog;
   }

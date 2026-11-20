@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Card, CardHeader, CardTitle, CardContent, Avatar, Badge } from "@devlaunchkit/ui";
 import { ArrowLeft, CreditCard, Smartphone, History, User } from "lucide-react";
-import { requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { requireAdminPage, isDatabaseMockMode } from "@/lib/auth/session";
 import {
   db,
   profiles,
@@ -10,11 +10,12 @@ import {
   prices,
   products,
   sessions,
+  authSessions,
+  authUsers,
   invoices,
   loginHistory,
 } from "@devlaunchkit/database";
 import { and, desc, eq, gt, isNull } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { demoUsers } from "../demo-users";
 
@@ -178,12 +179,29 @@ async function getUserDetails(id: string): Promise<DetailUserPayload | null> {
         .limit(5)
     : [];
 
-  const dbSessions = await db
-    .select({ id: sessions.id, expiresAt: sessions.expiresAt, createdAt: sessions.createdAt })
-    .from(sessions)
-    .where(and(eq(sessions.profileId, id), gt(sessions.expiresAt, new Date())))
-    .orderBy(desc(sessions.createdAt))
-    .limit(5);
+  const now = new Date();
+  const [legacySessions, providerSessions] = await Promise.all([
+    db
+      .select({ id: sessions.id, expiresAt: sessions.expiresAt, createdAt: sessions.createdAt })
+      .from(sessions)
+      .where(and(eq(sessions.profileId, id), gt(sessions.expiresAt, now)))
+      .orderBy(desc(sessions.createdAt))
+      .limit(5),
+    db
+      .select({
+        id: authSessions.id,
+        expiresAt: authSessions.expiresAt,
+        createdAt: authSessions.createdAt,
+      })
+      .from(authSessions)
+      .innerJoin(authUsers, eq(authSessions.userId, authUsers.id))
+      .where(and(eq(authUsers.email, profile.email), gt(authSessions.expiresAt, now)))
+      .orderBy(desc(authSessions.createdAt))
+      .limit(5),
+  ]);
+  const dbSessions = [...legacySessions, ...providerSessions]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 5);
 
   const dbLogins = await db
     .select()
@@ -250,12 +268,7 @@ async function getUserDetails(id: string): Promise<DetailUserPayload | null> {
 }
 
 export default async function UserDetailsPage({ params }: { params: Promise<{ id: string }> }) {
-  // Enforce server-side admin check
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/dashboard/admin");
-  }
+  await requireAdminPage();
 
   const { id } = await params;
   const user = await getUserDetails(id);

@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@devlaunchkit/ui";
 import { TrendingUp, AlertCircle, Users, CheckCircle, XCircle } from "lucide-react";
-import { requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { requireAdminPage, isDatabaseMockMode } from "@/lib/auth/session";
 import {
   db,
   subscriptions,
@@ -11,7 +11,6 @@ import {
   organizations,
 } from "@devlaunchkit/database";
 import { eq, desc } from "drizzle-orm";
-import { redirect } from "next/navigation";
 
 interface DisplaySubscription {
   id: string;
@@ -179,12 +178,7 @@ async function getSubscriptionData(): Promise<{
 }
 
 export default async function AdminSubscriptionsPage() {
-  // Authorize admin role
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/dashboard/admin");
-  }
+  await requireAdminPage();
 
   const { stats, list, isMock } = await getSubscriptionData();
 

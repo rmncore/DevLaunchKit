@@ -8,9 +8,9 @@
   "scripts": {
     "build": "tsc",
     "clean": "tsx ../../scripts/clean.ts",
-    "db:generate": "drizzle-kit generate",
+    "db:generate": "tsx ./node_modules/drizzle-kit/bin.cjs generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:push": "drizzle-kit push",
+    "db:push": "tsx ./node_modules/drizzle-kit/bin.cjs push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/seeds/index.ts"
   },

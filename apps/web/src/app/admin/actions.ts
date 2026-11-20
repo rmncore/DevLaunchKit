@@ -1,10 +1,12 @@
 "use server";
 
-import { DEMO_ADMIN_SESSION, requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { DEMO_ADMIN_SESSION, requireAdmin, isDatabaseMockMode } from "@/lib/auth/session";
 import { db, profiles, feedback, sessions, systemSettings } from "@devlaunchkit/database";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { getAuth } from "@/lib/auth/provider";
+import { redirect } from "next/navigation";
 
 export interface ActionResponse<T = null> {
   success: boolean;
@@ -155,7 +157,6 @@ export async function updateSystemSettingsAction(data: {
   logoUrl: string;
   supportEmail: string;
   maintenanceMode: boolean;
-  allowedDomains: string;
 }): Promise<ActionResponse> {
   try {
     await requireAdmin();
@@ -177,20 +178,23 @@ export async function updateSystemSettingsAction(data: {
         value: data.maintenanceMode,
         description: "Maintenance Mode Gate status",
       },
-      { key: "allowed_domains", value: data.allowedDomains, description: "Allowed CORS Domains" },
     ];
 
-    for (const item of settingsList) {
-      await db
-        .insert(systemSettings)
-        .values(item)
-        .onConflictDoUpdate({
-          target: systemSettings.key,
-          set: { value: item.value, updatedAt: new Date() },
-        });
-    }
+    await db.transaction(async (tx) => {
+      for (const item of settingsList) {
+        await tx
+          .insert(systemSettings)
+          .values(item)
+          .onConflictDoUpdate({
+            target: systemSettings.key,
+            set: { value: item.value, updatedAt: new Date() },
+          });
+      }
+    });
 
     revalidatePath("/admin/settings");
+    revalidatePath("/");
+    revalidatePath("/dashboard", "layout");
     return { success: true, data: null };
   } catch (error: any) {
     return { success: false, data: null, error: error.message || "Failed to update settings" };
@@ -217,15 +221,23 @@ export async function signOutAction(): Promise<ActionResponse> {
   const sessionToken = cookieStore.get("auth_session")?.value;
 
   try {
+    const auth = getAuth();
+    if (auth) await auth.api.signOut({ headers: await headers() });
     if (sessionToken && sessionToken !== DEMO_ADMIN_SESSION) {
       await db.delete(sessions).where(eq(sessions.token, sessionToken));
     }
-  } catch (error) {
-    console.error("Could not end the session:", error);
+  } catch {
+    console.error("Could not end the session.");
     return { success: false, data: null, error: "Could not sign out. Please try again." };
   }
 
   cookieStore.delete("auth_session");
   cookieStore.delete("mock_role");
   return { success: true, data: null };
+}
+
+export async function signOutAndRedirect() {
+  const result = await signOutAction();
+  if (result.success) redirect("/sign-in");
+  throw new Error("Sign-out failed.");
 }

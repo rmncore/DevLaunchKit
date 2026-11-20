@@ -1,6 +1,8 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { db, profiles, sessions } from "@devlaunchkit/database";
 import { eq } from "drizzle-orm";
+import { getAuth } from "./provider";
 
 export interface AdminUser {
   id: string;
@@ -47,10 +49,6 @@ export async function getSessionContext(): Promise<AuthContext> {
 
   const signedOut = { isAuthenticated: false, user: null, session: null };
 
-  if (!sessionToken) {
-    return signedOut;
-  }
-
   if (isDatabaseMockMode()) {
     if (sessionToken !== DEMO_ADMIN_SESSION) {
       return signedOut;
@@ -69,6 +67,27 @@ export async function getSessionContext(): Promise<AuthContext> {
   }
 
   try {
+    const auth = getAuth();
+    const identity = auth && (await auth.api.getSession({ headers: await headers() }));
+    if (identity) {
+      const [profile] = await db
+        .select()
+        .from(profiles)
+        .where(eq(profiles.email, identity.user.email))
+        .limit(1);
+      if (!profile || profile.deletedAt) return signedOut;
+      return {
+        isAuthenticated: true,
+        user: { ...profile, name: profile.name || identity.user.name },
+        session: {
+          id: identity.session.id,
+          token: identity.session.token,
+          userId: profile.id,
+          expiresAt: identity.session.expiresAt,
+        },
+      };
+    }
+    if (!sessionToken) return signedOut;
     const results = await db
       .select({
         session: sessions,
@@ -110,13 +129,13 @@ export async function getSessionContext(): Promise<AuthContext> {
         expiresAt: match.session.expiresAt,
       },
     };
-  } catch (error) {
-    console.error("Failed to fetch session context:", error);
+  } catch {
+    console.error("Failed to fetch session context.");
     return signedOut;
   }
 }
 
-// Middleware or route guard requiring admin access
+// Check permissions for server-rendered pages and actions.
 export async function requireAdmin(): Promise<AdminUser> {
   const context = await getSessionContext();
 
@@ -137,4 +156,10 @@ export async function requireAdmin(): Promise<AdminUser> {
   }
 
   return context.user;
+}
+
+export async function requireAdminPage(): Promise<AdminUser> {
+  return requireAdmin().catch(() =>
+    redirect(isDatabaseMockMode() ? "/dashboard/admin" : "/sign-in")
+  );
 }
