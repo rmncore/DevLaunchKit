@@ -44,7 +44,7 @@ export default function AnalyticsPage() {
             return (
               <div
                 key={idx}
-                className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4 shadow-sm"
+                className="rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 p-4"
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-neutral-400 font-semibold">{stat.label}</span>
@@ -53,7 +53,7 @@ export default function AnalyticsPage() {
                 <p className="text-xl font-bold mt-2 text-neutral-950 dark:text-white">
                   {stat.value}
                 </p>
-                <p className="text-[10px] text-neutral-400 mt-0.5">{stat.sub}</p>
+                <p className="text-xs text-neutral-400 mt-0.5">{stat.sub}</p>
               </div>
             );
           })}
@@ -63,7 +63,7 @@ export default function AnalyticsPage() {
           title="Transaction Latency Logs"
           description="Real-time audit records showing request pathways and roundtrip latency times."
         >
-          <div className="space-y-2 font-mono text-[11px] text-neutral-600 dark:text-neutral-400">
+          <div className="space-y-2 font-mono text-xs text-neutral-600 dark:text-neutral-400">
             <div className="flex justify-between p-2 rounded bg-neutral-100/50 dark:bg-neutral-800/40">
               <span>GET /api/v1/auth/session</span>
               <span className="text-emerald-500">200 OK — 12ms</span>

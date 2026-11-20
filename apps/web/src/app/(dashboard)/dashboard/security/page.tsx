@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   PageContainer,
@@ -8,7 +8,6 @@ import {
   PageHeader,
   SettingsLayout,
   SettingsCard,
-  DangerZone,
 } from "@devlaunchkit/ui";
 import { User, Settings, ShieldAlert, CreditCard } from "lucide-react";
 
@@ -37,47 +36,16 @@ export default function SecurityPage() {
           onSectionSelect={(id) => router.push(`/dashboard/${id}`)}
         >
           <SettingsCard
-            title="Password and Credential Keys"
-            description="Change your account sign-in password below."
+            title="Account security"
+            description="Configure password changes, multi-factor authentication, and session controls through the authentication provider you connect to this workspace."
           >
-            <form className="space-y-4 max-w-md">
-              <div>
-                <label className="block text-xs font-semibold text-neutral-500 uppercase">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  className="mt-1.5 w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-transparent px-3.5 py-2 text-xs outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-neutral-500 uppercase">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  className="mt-1.5 w-full rounded-lg border border-neutral-200 dark:border-neutral-800 bg-transparent px-3.5 py-2 text-xs outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <button
-                type="submit"
-                onClick={(e) => e.preventDefault()}
-                className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-semibold text-white transition-colors"
-              >
-                Change Password
-              </button>
-            </form>
+            <Link
+              href="/dashboard/docs"
+              className="text-sm font-semibold text-indigo-700 underline dark:text-indigo-300"
+            >
+              View authentication setup
+            </Link>
           </SettingsCard>
-
-          {/* Danger Zone Panel */}
-          <DangerZone
-            title="Permanently Deactivate Account"
-            description="Deactivating your account will purge user settings, revoke authorization credentials, and delete workspace database rows."
-            actionLabel="Deactivate Account"
-            onAction={() => alert("Action triggered!")}
-          />
         </SettingsLayout>
       </ContentWrapper>
     </PageContainer>

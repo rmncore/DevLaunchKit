@@ -26,7 +26,7 @@ export function validatePayload<T>(schema: z.Schema<T>, data: unknown): T {
   const result = schema.safeParse(data);
   if (!result.success) {
     throw new Error(
-      `Validation failed: ${result.error.errors.map((e: { message: string }) => e.message).join(", ")}`
+      `Validation failed: ${result.error.issues.map((e: { message: string }) => e.message).join(", ")}`
     );
   }
   return result.data;

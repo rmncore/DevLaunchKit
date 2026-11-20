@@ -2,27 +2,22 @@ import { test, before, after } from "node:test";
 import * as assert from "node:assert";
 import * as fs from "node:fs";
 import * as path from "node:path";
+import { tmpdir } from "node:os";
 import { handleCreateCommand } from "../src/commands/create.js";
 import { handleAddCommand } from "../src/commands/add.js";
 import { handleDoctorCommand } from "../src/commands/doctor.js";
 
-const cleanup = () => {
-  const saasDemoPath = path.resolve(process.cwd(), "saas-demo");
-  const envPath = path.resolve(process.cwd(), ".env");
-  if (fs.existsSync(saasDemoPath)) {
-    fs.rmSync(saasDemoPath, { recursive: true, force: true });
-  }
-  if (fs.existsSync(envPath)) {
-    fs.rmSync(envPath, { force: true });
-  }
-};
+const originalCwd = process.cwd();
+let testDirectory: string | undefined;
 
 before(() => {
-  cleanup();
+  testDirectory = fs.mkdtempSync(path.join(tmpdir(), "devlaunchkit-cli-"));
+  process.chdir(testDirectory);
 });
 
 after(() => {
-  cleanup();
+  process.chdir(originalCwd);
+  if (testDirectory) fs.rmSync(testDirectory, { recursive: true, force: true });
 });
 
 test("CLI Create command simulation", () => {
@@ -36,6 +31,7 @@ test("CLI Create command simulation", () => {
     handleCreateCommand("saas-demo", false);
     assert.ok(logOutput.includes("Initializing new SaaS application"));
     assert.ok(logOutput.includes("saas-demo"));
+    assert.ok(fs.existsSync("saas-demo/package.json"));
   } finally {
     console.log = originalLog;
   }
@@ -51,6 +47,7 @@ test("CLI Add command simulation", () => {
   try {
     handleAddCommand("stripe", false);
     assert.ok(logOutput.includes("Configuring provider module"));
+    assert.match(fs.readFileSync(".env", "utf8"), /^STRIPE_API_KEY=/m);
     assert.ok(logOutput.includes("stripe"));
   } finally {
     console.log = originalLog;

@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   PageContainer,
@@ -27,7 +27,7 @@ export default function BillingPage() {
       <ContentWrapper>
         <PageHeader
           title="Subscription Plans & Billing"
-          description="Manage user subscription plans, payment tokens, and monthly invoice catalogs."
+          description="Compare sample subscription plans and open the checkout demo."
         />
 
         <SettingsLayout
@@ -43,16 +43,17 @@ export default function BillingPage() {
               </div>
               <div>
                 <h3 className="text-sm font-bold text-neutral-950 dark:text-white">
-                  Active Plan: Pro Workspace
+                  Sample plan: Pro Workspace
                 </h3>
-                <p className="text-xs text-neutral-500 mt-0.5">
-                  Renews automatically on October 12, 2026 ($29.00/month).
-                </p>
+                <p className="text-xs text-neutral-500 mt-0.5">Example monthly rate: $49.00.</p>
               </div>
             </div>
-            <button className="rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3.5 py-2 text-xs font-semibold text-white transition-colors">
-              Manage Billing Portal
-            </button>
+            <Link
+              href="/#billing"
+              className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500"
+            >
+              Open checkout demo
+            </Link>
           </div>
 
           <SettingsCard
@@ -65,7 +66,7 @@ export default function BillingPage() {
                   <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
                     Free Package
                   </h4>
-                  <p className="text-[10px] text-neutral-400 mt-0.5">
+                  <p className="text-xs text-neutral-400 mt-0.5">
                     Basic personal dev workflow sandbox.
                   </p>
                 </div>
@@ -84,18 +85,18 @@ export default function BillingPage() {
 
               <div className="rounded-lg border-2 border-indigo-500 p-4 space-y-4 relative overflow-hidden">
                 <div className="absolute top-2 right-2 bg-indigo-500 text-white text-[8px] font-bold uppercase px-1.5 py-0.5 rounded">
-                  Current Plan
+                  Sample plan
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-neutral-900 dark:text-white">
                     Pro Package
                   </h4>
-                  <p className="text-[10px] text-neutral-400 mt-0.5">
+                  <p className="text-xs text-neutral-400 mt-0.5">
                     Production-ready team workspaces.
                   </p>
                 </div>
                 <div className="text-xl font-bold">
-                  $29 <span className="text-xs font-medium text-neutral-400">/mo</span>
+                  $49 <span className="text-xs font-medium text-neutral-400">/mo</span>
                 </div>
                 <ul className="text-xs text-neutral-500 space-y-1.5 pt-2">
                   <li className="flex items-center gap-1.5">

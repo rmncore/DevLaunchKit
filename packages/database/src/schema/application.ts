@@ -9,7 +9,7 @@ import {
   index,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { profiles, organizations } from "./core";
+import { profiles, organizations } from "./core.js";
 
 // 1. Notifications Table
 export const notifications = pgTable(

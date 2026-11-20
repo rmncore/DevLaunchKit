@@ -99,7 +99,7 @@ export const updateUserDataSchema = z
     image: z.string().url().optional().nullable(),
     role: userRoleSchema.optional(),
     organizationId: z.string().uuid().nullable().optional(),
-    metadata: z.record(z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: "At least one field is required.",
@@ -110,7 +110,7 @@ export const createOrganizationDataSchema = z.object({
   name: z.string().trim().min(1).max(100),
   slug: slugSchema.optional(),
   logo: z.string().url().nullable().optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 /** Organization update schema. */
@@ -119,7 +119,7 @@ export const updateOrganizationDataSchema = z
     name: z.string().trim().min(1).max(100).optional(),
     slug: slugSchema.optional(),
     logo: z.string().url().nullable().optional(),
-    metadata: z.record(z.unknown()).optional(),
+    metadata: z.record(z.string(), z.unknown()).optional(),
   })
   .refine((value) => Object.keys(value).length > 0, {
     message: "At least one field is required.",
@@ -199,5 +199,5 @@ export const authEmailPayloadSchema = z.object({
   to: emailSchema,
   subject: z.string().trim().min(1).max(200),
   template: authEmailTemplateSchema,
-  data: z.record(z.unknown()),
+  data: z.record(z.string(), z.unknown()),
 });

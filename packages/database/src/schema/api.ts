@@ -9,7 +9,7 @@ import {
   index,
   primaryKey,
 } from "drizzle-orm/pg-core";
-import { organizations } from "./core";
+import { organizations } from "./core.js";
 
 // 1. API Keys Table
 export const apiKeys = pgTable(

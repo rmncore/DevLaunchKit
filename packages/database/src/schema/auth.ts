@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, boolean, index } from "drizzle-orm/pg-core";
-import { profiles } from "./core";
+import { profiles } from "./core.js";
 
 // 1. Sessions Table
 export const sessions = pgTable(

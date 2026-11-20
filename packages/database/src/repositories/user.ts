@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { Profile, InsertProfile, Session, InsertSession } from "../types";
-import { profiles, sessions, loginHistory, userRoles, roles } from "../schema";
+import { BaseRepository } from "./base.js";
+import { Profile, InsertProfile, Session, InsertSession } from "../types/index.js";
+import { profiles, sessions, loginHistory, userRoles, roles } from "../schema/index.js";
 import { eq, and } from "drizzle-orm";
 
 export class UserRepository extends BaseRepository<Profile, InsertProfile, typeof profiles> {

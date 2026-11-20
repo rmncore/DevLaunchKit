@@ -16,51 +16,60 @@ export interface PricingPlan {
   popular?: boolean;
 }
 
-export function PricingCard({ plan, onSelect }: { plan: PricingPlan; onSelect?: () => void }) {
+export function PricingCard({
+  plan,
+  onSelect,
+  selected,
+}: {
+  plan: PricingPlan;
+  onSelect?: () => void;
+  selected?: boolean;
+}) {
   return (
-    <div
+    <section
       className={cn(
-        "p-8 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 flex flex-col justify-between text-left relative overflow-hidden transition-all duration-200",
-        plan.popular && "border-indigo-500 shadow-lg shadow-indigo-500/10 ring-1 ring-indigo-500"
+        "flex flex-col justify-between gap-5 rounded-lg border border-slate-200 bg-white p-5 text-left dark:border-slate-800 dark:bg-slate-950",
+        selected && "border-indigo-600 dark:border-indigo-400"
       )}
     >
-      {plan.popular && (
-        <span className="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-black tracking-wider uppercase bg-indigo-500 text-white">
-          Popular
-        </span>
-      )}
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h4 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
-            {plan.name}
-          </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400">{plan.description}</p>
+      <div className="space-y-4">
+        <div>
+          <h2 className="text-base font-semibold tracking-tight">{plan.name}</h2>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{plan.description}</p>
         </div>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-4xl font-black tracking-tight">{plan.price}</span>
+        <p className="flex items-baseline gap-1.5">
+          <span className="text-3xl font-semibold tabular-nums tracking-tight">{plan.price}</span>
           {plan.period && (
-            <span className="text-xs text-slate-400 font-medium">/{plan.period}</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">/ {plan.period}</span>
           )}
-        </div>
-        <ul className="space-y-3 pt-2">
-          {plan.features.map((f, i) => (
-            <li key={i} className="flex gap-2.5 items-start text-sm">
-              <Check className="w-4 h-4 shrink-0 text-indigo-500 mt-0.5" />
-              <span className="text-slate-700 dark:text-slate-300 leading-normal">{f}</span>
+        </p>
+        <ul className="space-y-2 border-t border-slate-200 pt-3 dark:border-slate-800">
+          {plan.features.map((feature) => (
+            <li
+              key={feature}
+              className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-300"
+            >
+              <Check
+                className="mt-0.5 size-4 shrink-0 text-indigo-600 dark:text-indigo-300"
+                aria-hidden="true"
+              />
+              {feature}
             </li>
           ))}
         </ul>
       </div>
-      <div className="mt-8">
+      {onSelect && (
         <Button
+          type="button"
+          aria-pressed={selected}
           onClick={onSelect}
-          variant={plan.popular ? "primary" : "secondary"}
-          className="w-full h-11"
+          variant={(selected ?? plan.popular) ? "primary" : "outline"}
+          className="w-full rounded-md"
         >
-          {plan.buttonText || "Choose Plan"}
+          {selected ? "Selected" : plan.buttonText || `Choose ${plan.name}`}
         </Button>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }
 
@@ -113,33 +122,39 @@ export interface FeatureComparison {
 }
 
 export function PlanComparison({ features }: { features: FeatureComparison[] }) {
-  const checkOrCross = (val: boolean | string) => {
-    if (typeof val === "string") return val;
-    return val ? (
-      <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-    ) : (
-      <span className="text-slate-350 dark:text-slate-800">—</span>
-    );
-  };
+  function featureValue(value: boolean | string) {
+    if (typeof value === "string") return value;
+    return value ? "Included" : "—";
+  }
 
   return (
-    <div className="w-full border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-white dark:bg-slate-950 text-sm">
-      <div className="grid grid-cols-4 gap-4 p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">
-        <div className="text-left">Feature</div>
-        <div>Starter</div>
-        <div>Pro</div>
-        <div>Enterprise</div>
-      </div>
-      <div className="divide-y divide-slate-100 dark:divide-slate-900">
-        {features.map((f, i) => (
-          <div key={i} className="grid grid-cols-4 gap-4 p-4 items-center text-center">
-            <div className="text-left font-bold text-slate-700 dark:text-slate-300">{f.name}</div>
-            <div>{checkOrCross(f.starter)}</div>
-            <div>{checkOrCross(f.pro)}</div>
-            <div>{checkOrCross(f.enterprise)}</div>
-          </div>
-        ))}
-      </div>
+    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white text-sm dark:border-slate-800 dark:bg-slate-950">
+      <table className="w-full min-w-[26rem] border-collapse text-left">
+        <caption className="border-b border-slate-200 px-4 py-3 text-left text-base font-semibold dark:border-slate-800">
+          Compare plans
+        </caption>
+        <thead className="border-b border-slate-200 bg-slate-50 text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-300">
+          <tr>
+            {["Feature", "Starter", "Pro", "Enterprise"].map((heading) => (
+              <th key={heading} scope="col" className="px-4 py-2 font-medium">
+                {heading}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+          {features.map((feature) => (
+            <tr key={feature.name}>
+              <th scope="row" className="px-4 py-2.5 font-medium">
+                {feature.name}
+              </th>
+              <td className="px-4 py-2.5">{featureValue(feature.starter)}</td>
+              <td className="px-4 py-2.5">{featureValue(feature.pro)}</td>
+              <td className="px-4 py-2.5">{featureValue(feature.enterprise)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -154,17 +169,19 @@ export function CheckoutSummary({
   items,
   discount = 0,
   onCheckout,
+  buttonText = "Proceed to payment",
 }: {
   items: CheckoutItem[];
   discount?: number;
   onCheckout?: () => void;
+  buttonText?: string;
 }) {
   const subtotal = items.reduce((sum, item) => sum + item.price, 0);
   const total = subtotal - discount;
 
   return (
-    <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 text-left space-y-4 max-w-sm mx-auto">
-      <h4 className="font-bold text-base border-b border-slate-200 dark:border-slate-850 pb-3">
+    <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-5 text-left dark:border-slate-800 dark:bg-slate-950">
+      <h4 className="font-bold text-base border-b border-slate-200 dark:border-slate-800 pb-3">
         Checkout Summary
       </h4>
       <div className="space-y-2.5">
@@ -179,7 +196,7 @@ export function CheckoutSummary({
         ))}
       </div>
 
-      <div className="border-t border-slate-200 dark:border-slate-850 pt-3.5 space-y-2 text-xs text-slate-500 dark:text-slate-400">
+      <div className="border-t border-slate-200 dark:border-slate-800 pt-3.5 space-y-2 text-xs text-slate-500 dark:text-slate-400">
         <div className="flex justify-between">
           <span>Subtotal</span>
           <span className="font-mono">${subtotal.toFixed(2)}</span>
@@ -190,14 +207,14 @@ export function CheckoutSummary({
             <span className="font-mono">-${discount.toFixed(2)}</span>
           </div>
         )}
-        <div className="flex justify-between text-sm font-black text-slate-900 dark:text-white pt-2">
+        <div className="flex justify-between text-sm font-semibold text-slate-900 dark:text-white pt-2">
           <span>Total</span>
           <span className="font-mono">${total.toFixed(2)}</span>
         </div>
       </div>
 
       <Button onClick={onCheckout} className="w-full mt-4 flex items-center justify-center gap-2">
-        Proceed to Payment <ArrowRight className="w-4 h-4" />
+        {buttonText} <ArrowRight className="w-4 h-4" aria-hidden="true" />
       </Button>
     </div>
   );
@@ -219,8 +236,8 @@ export function BillingHistory({
   onDownload?: (id: string) => void;
 }) {
   return (
-    <div className="w-full border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-950 overflow-hidden text-left text-sm">
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-650 dark:text-slate-300">
+    <div className="w-full border border-slate-200 dark:border-slate-800 rounded-lg bg-white dark:bg-slate-950 overflow-hidden text-left text-sm">
+      <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
         <Receipt className="w-4 h-4" /> Billing & Invoices
       </div>
       <div className="divide-y divide-slate-100 dark:divide-slate-900">
@@ -234,8 +251,10 @@ export function BillingHistory({
               <p className="text-xs text-slate-400 font-semibold">{inv.date}</p>
             </div>
             <div className="flex items-center gap-4">
-              <span className="font-mono font-black">{inv.amount}</span>
+              <span className="font-medium tabular-nums">{inv.amount}</span>
               <button
+                type="button"
+                aria-label={`Download invoice ${inv.id}`}
                 onClick={() => onDownload?.(inv.id)}
                 className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-900 text-slate-500 hover:text-slate-700 cursor-pointer"
               >
@@ -263,9 +282,9 @@ export function UsageMeter({
 }) {
   const percentage = (value / max) * 100;
   return (
-    <div className="w-full space-y-2.5 text-left p-4 rounded-xl border border-slate-200 dark:border-slate-850 bg-white dark:bg-slate-950">
+    <div className="w-full space-y-2.5 text-left p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950">
       <div className="flex justify-between items-baseline">
-        <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">{label}</span>
+        <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{label}</span>
         <span className="text-xs font-bold font-mono">
           {value} / {max} {unit}
         </span>

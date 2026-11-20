@@ -42,6 +42,11 @@ console.log("🚀 Starting Monorepo Packages Bootstrap...");
 
 packages.forEach((pkg) => {
   const pkgDir = path.join(packagesRoot, pkg.name);
+  if (fs.existsSync(pkgDir)) {
+    console.log(`Skipping existing packages/${pkg.name}`);
+    return;
+  }
+
   const srcDir = path.join(pkgDir, "src");
 
   createDirectory(pkgDir);

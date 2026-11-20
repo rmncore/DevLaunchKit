@@ -1,4 +1,4 @@
-import { checkDatabaseHealth, UserRepository } from "./index";
+import { checkDatabaseHealth, UserRepository } from "./index.js";
 
 async function run() {
   console.log("🔍 Running connection checks...");

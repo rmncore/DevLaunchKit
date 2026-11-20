@@ -20,11 +20,11 @@ import {
   Settings,
   CreditCard,
   Flag,
-  Server,
   MessageSquare,
   ShieldCheck,
 } from "lucide-react";
-import { toggleAdminCookieAction } from "./actions";
+import { signOutAction } from "./actions";
+import Link from "next/link";
 
 const adminNavigationGroups: NavGroup[] = [
   {
@@ -41,7 +41,6 @@ const adminNavigationGroups: NavGroup[] = [
     items: [
       { title: "Organizations", href: "/admin/organizations", icon: Building2 },
       { title: "Feature Flags", href: "/admin/feature-flags", icon: Flag },
-      { title: "System Health", href: "/admin/dashboard", icon: Server },
     ],
   },
   {
@@ -50,7 +49,9 @@ const adminNavigationGroups: NavGroup[] = [
   },
 ];
 
-function AdminShellInner({ children }: { children: React.ReactNode }) {
+type AdminShellProps = { children: React.ReactNode; userEmail: string; demo: boolean };
+
+function AdminShellInner({ children, userEmail, demo }: AdminShellProps) {
   const router = useRouter();
   const pathname = usePathname();
   const { setBreadcrumbs } = useBreadcrumbs();
@@ -58,11 +59,25 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
 
   const [commandPaletteOpen, setCommandPaletteOpen] = React.useState(false);
   const [notificationsOpen, setNotificationsOpen] = React.useState(false);
+  const [signOutError, setSignOutError] = React.useState("");
+
+  async function signOut() {
+    try {
+      const result = await signOutAction();
+      if (result.success) {
+        router.replace("/dashboard/admin");
+      } else {
+        setSignOutError(result.error ?? "Could not sign out.");
+      }
+    } catch {
+      setSignOutError("Could not sign out. Please try again.");
+    }
+  }
 
   React.useEffect(() => {
     const segments = pathname.split("/").filter(Boolean);
     const crumbs = segments.map((seg, idx) => {
-      const href = "/" + segments.slice(0, idx + 1).join("/");
+      const href = idx === 0 ? "/dashboard/admin" : "/" + segments.slice(0, idx + 1).join("/");
       const title = seg.charAt(0).toUpperCase() + seg.slice(1).replace("-", " ");
       return { title, href: idx === segments.length - 1 ? undefined : href };
     });
@@ -90,17 +105,19 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-950 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-white">
       <DashboardSidebar
         groups={adminNavigationGroups}
         activeHref={pathname}
         onNavigate={(href) => router.push(href)}
-        organizationName="LaunchKit Admin Ops"
+        organizationName="LaunchKit Admin"
+        homeHref="/"
+        showItemActions={false}
       />
 
       <div
         className={
-          (isCollapsed ? "md:pl-16" : "md:pl-64") +
+          (isCollapsed ? "md:pl-16" : "md:pl-56") +
           " flex flex-col min-h-screen transition-all duration-300"
         }
       >
@@ -108,34 +125,40 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
           onSearchClick={() => setCommandPaletteOpen(true)}
           onNotificationsClick={() => setNotificationsOpen(true)}
           unreadNotifications={0}
-          userEmail="admin@devlaunchkit.com"
-          onLogout={async () => {
-            await toggleAdminCookieAction(false);
-            router.push("/");
-          }}
+          userEmail={userEmail}
+          onLogout={signOut}
           onNavigate={(href) => router.push(href)}
         />
 
-        {/* Sandbox Role Switcher Banner */}
-        <div className="bg-indigo-600 dark:bg-indigo-950 text-white dark:text-indigo-200 px-4 py-2 text-xs flex justify-between items-center shadow-inner border-b border-indigo-500/30">
-          <div className="flex items-center gap-1.5 font-medium">
-            <ShieldCheck className="h-4 w-4 text-indigo-200" />
-            <span>
-              <strong>Sandbox Admin Mode</strong>: Enforcing client and middleware RBAC rules.
-            </span>
+        {demo && (
+          <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 py-1.5 text-sm text-slate-700 dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 sm:px-6">
+            <p className="flex items-center gap-2">
+              <ShieldCheck className="size-4" aria-hidden="true" /> Admin demo · Sample records
+            </p>
+            <button
+              type="button"
+              onClick={signOut}
+              className="rounded-md px-2 py-1 font-semibold hover:bg-indigo-100 dark:hover:bg-indigo-900"
+            >
+              Exit demo
+            </button>
           </div>
-          <button
-            onClick={async () => {
-              await toggleAdminCookieAction(false);
-              router.push("/");
-            }}
-            className="bg-white/20 hover:bg-white/30 text-white font-semibold px-2.5 py-1 rounded transition-colors text-[10px] uppercase tracking-wider"
-          >
-            Deactivate Admin
-          </button>
-        </div>
+        )}
+        {signOutError && (
+          <p role="alert" className="px-4 py-2 text-sm text-red-700 dark:text-red-300">
+            {signOutError}
+          </p>
+        )}
 
-        <main className="flex-1 p-6 md:p-8">{children}</main>
+        <main className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">
+          <Link
+            href="/dashboard"
+            className="mb-5 inline-block text-sm font-medium text-indigo-700 hover:underline dark:text-indigo-300"
+          >
+            Back to workspace
+          </Link>
+          {children}
+        </main>
       </div>
 
       <CommandPalette
@@ -155,10 +178,10 @@ function AdminShellInner({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function AdminShell({ children }: { children: React.ReactNode }) {
+export default function AdminShell(props: AdminShellProps) {
   return (
     <DashboardProviders>
-      <AdminShellInner>{children}</AdminShellInner>
+      <AdminShellInner {...props} />
     </DashboardProviders>
   );
 }

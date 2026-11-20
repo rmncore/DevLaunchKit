@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { APIKey, InsertAPIKey } from "../types";
-import { apiKeys, apiRequests, rateLimits } from "../schema";
+import { BaseRepository } from "./base.js";
+import { APIKey, InsertAPIKey } from "../types/index.js";
+import { apiKeys, apiRequests, rateLimits } from "../schema/index.js";
 import { eq, and, sql } from "drizzle-orm";
 
 export class APIKeyRepository extends BaseRepository<APIKey, InsertAPIKey, typeof apiKeys> {

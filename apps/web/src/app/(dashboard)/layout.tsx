@@ -20,7 +20,7 @@ import {
   FolderKanban,
   User,
   Settings,
-  ShieldAlert,
+  Layers,
   CreditCard,
   Building2,
   KeyRound,
@@ -191,28 +191,30 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
       icon: Settings,
     },
     {
-      id: "action-logout",
-      title: "Logout from session",
-      category: "Actions",
-      action: () => alert("Logged out!"),
-      icon: ShieldAlert,
+      id: "go-demos",
+      title: "Go to Component Demos",
+      category: "Navigation",
+      action: () => router.push("/"),
+      icon: Layers,
     },
   ];
 
   return (
-    <div className="min-h-screen text-neutral-900 dark:text-white bg-neutral-50 dark:bg-neutral-950 font-sans">
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 dark:bg-slate-950 dark:text-white">
       {/* Collapsible Sidebar */}
       <DashboardSidebar
         groups={navigationGroups}
         activeHref={pathname}
         onNavigate={(href) => router.push(href)}
-        organizationName="SaaS Enterprise Workspace"
+        organizationName="LaunchKit"
+        homeHref="/"
+        showItemActions={false}
       />
 
       {/* Primary Layout offset */}
       <div
         className={
-          React.useMemo(() => (isCollapsed ? "md:pl-16" : "md:pl-64"), [isCollapsed]) +
+          React.useMemo(() => (isCollapsed ? "md:pl-16" : "md:pl-56"), [isCollapsed]) +
           " flex flex-col min-h-screen transition-all duration-300"
         }
       >

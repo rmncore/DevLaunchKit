@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm";
-import * as schema from "../schema";
+import * as schema from "../schema/index.js";
 
 // 1. Profiles Relations
 export const profilesRelations = relations(schema.profiles, ({ many }) => ({

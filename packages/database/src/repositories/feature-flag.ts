@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { FeatureFlag, InsertFeatureFlag } from "../types";
-import { featureFlags, featureFlagAssignments } from "../schema";
+import { BaseRepository } from "./base.js";
+import { FeatureFlag, InsertFeatureFlag } from "../types/index.js";
+import { featureFlags, featureFlagAssignments } from "../schema/index.js";
 import { eq, and } from "drizzle-orm";
 
 export class FeatureFlagRepository extends BaseRepository<

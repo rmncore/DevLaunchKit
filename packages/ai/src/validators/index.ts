@@ -51,7 +51,7 @@ export function validatePayload<T>(schema: z.Schema<T>, data: unknown): T {
   const result = schema.safeParse(data);
   if (!result.success) {
     throw new Error(
-      `AI payload validation failed: ${result.error.errors.map((e) => e.message).join(", ")}`
+      `AI payload validation failed: ${result.error.issues.map((e) => e.message).join(", ")}`
     );
   }
   return result.data;

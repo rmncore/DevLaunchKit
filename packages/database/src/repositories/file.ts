@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { File, InsertFile } from "../types";
-import { files, folders, media } from "../schema";
+import { BaseRepository } from "./base.js";
+import { File, InsertFile } from "../types/index.js";
+import { files, folders, media } from "../schema/index.js";
 import { eq, and } from "drizzle-orm";
 
 export class FileRepository extends BaseRepository<File, InsertFile, typeof files> {

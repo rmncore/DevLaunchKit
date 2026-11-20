@@ -38,7 +38,7 @@ async function getSubscriptionData(): Promise<{
   list: DisplaySubscription[];
   isMock: boolean;
 }> {
-  const isMock = await isDatabaseMockMode();
+  const isMock = isDatabaseMockMode();
 
   if (isMock) {
     // High quality mock subscription data
@@ -113,101 +113,69 @@ async function getSubscriptionData(): Promise<{
     };
   }
 
-  try {
-    // Database mode
-    const dbSubs = await db
-      .select({
-        id: subscriptions.id,
-        status: subscriptions.status,
-        quantity: subscriptions.quantity,
-        currentPeriodStart: subscriptions.currentPeriodStart,
-        currentPeriodEnd: subscriptions.currentPeriodEnd,
-        // joins
-        profileName: profiles.name,
-        profileEmail: profiles.email,
-        orgName: organizations.name,
-        planName: products.name,
-        unitAmount: prices.unitAmount,
-        interval: prices.interval,
-      })
-      .from(subscriptions)
-      .leftJoin(profiles, eq(subscriptions.userId, profiles.id))
-      .leftJoin(organizations, eq(subscriptions.organizationId, organizations.id))
-      .leftJoin(prices, eq(subscriptions.priceId, prices.id))
-      .leftJoin(products, eq(prices.productId, products.id))
-      .orderBy(desc(subscriptions.createdAt));
+  // Database mode
+  const dbSubs = await db
+    .select({
+      id: subscriptions.id,
+      status: subscriptions.status,
+      quantity: subscriptions.quantity,
+      currentPeriodStart: subscriptions.currentPeriodStart,
+      currentPeriodEnd: subscriptions.currentPeriodEnd,
+      // joins
+      profileName: profiles.name,
+      profileEmail: profiles.email,
+      orgName: organizations.name,
+      planName: products.name,
+      unitAmount: prices.unitAmount,
+      interval: prices.interval,
+    })
+    .from(subscriptions)
+    .leftJoin(profiles, eq(subscriptions.userId, profiles.id))
+    .leftJoin(organizations, eq(subscriptions.organizationId, organizations.id))
+    .leftJoin(prices, eq(subscriptions.priceId, prices.id))
+    .leftJoin(products, eq(prices.productId, products.id))
+    .orderBy(desc(subscriptions.createdAt));
 
-    const list: DisplaySubscription[] = dbSubs.map((s) => ({
-      id: s.id,
-      customerName: s.profileName || s.orgName || "Acme Client",
-      customerEmail: s.profileEmail || "billing@org.local",
-      planName: s.planName || "LaunchKit Pro",
-      amount: (s.unitAmount || 4900) / 100,
-      interval: s.interval || "month",
-      status: s.status,
-      startDate: s.currentPeriodStart.toISOString(),
-      endDate: s.currentPeriodEnd.toISOString(),
-    }));
+  const list: DisplaySubscription[] = dbSubs.map((s) => ({
+    id: s.id,
+    customerName: s.profileName || s.orgName || "Acme Client",
+    customerEmail: s.profileEmail || "billing@org.local",
+    planName: s.planName || "LaunchKit Pro",
+    amount: (s.unitAmount || 4900) / 100,
+    interval: s.interval || "month",
+    status: s.status,
+    startDate: s.currentPeriodStart.toISOString(),
+    endDate: s.currentPeriodEnd.toISOString(),
+  }));
 
-    // Calculate aggregated metrics
-    let activeCount = 0;
-    let cancelledCount = 0;
-    let expiredCount = 0;
-    let mrr = 0;
+  // Calculate aggregated metrics
+  let activeCount = 0;
+  let cancelledCount = 0;
+  let expiredCount = 0;
+  let mrr = 0;
 
-    list.forEach((sub) => {
-      if (sub.status === "active") {
-        activeCount++;
-        mrr += sub.amount;
-      } else if (sub.status === "cancelled") {
-        cancelledCount++;
-      } else {
-        expiredCount++;
-      }
-    });
+  list.forEach((sub) => {
+    if (sub.status === "active") {
+      activeCount++;
+      mrr += sub.amount;
+    } else if (sub.status === "cancelled") {
+      cancelledCount++;
+    } else {
+      expiredCount++;
+    }
+  });
 
-    return {
-      stats: {
-        activeCount,
-        cancelledCount,
-        expiredCount,
-        mrr,
-        totalUsersOnPaid: activeCount,
-      },
-      list,
-      isMock: false,
-    };
-  } catch (error) {
-    console.error("Failed to load subscription telemetry, using fallback:", error);
-    return {
-      stats: { activeCount: 3, cancelledCount: 1, expiredCount: 1, mrr: 447, totalUsersOnPaid: 3 },
-      list: [
-        {
-          id: "sub_1",
-          customerName: "Alice Vance",
-          customerEmail: "alice.vance@clerk.com",
-          planName: "Enterprise Plan",
-          amount: 199,
-          interval: "month",
-          status: "active",
-          startDate: "2026-01-10T12:00:00Z",
-          endDate: "2026-08-10T12:00:00Z",
-        },
-        {
-          id: "sub_2",
-          customerName: "Bob Carter",
-          customerEmail: "bob.carter@gmail.com",
-          planName: "Pro Plan",
-          amount: 49,
-          interval: "month",
-          status: "active",
-          startDate: "2026-03-15T14:30:00Z",
-          endDate: "2026-08-15T14:30:00Z",
-        },
-      ],
-      isMock: true,
-    };
-  }
+  return {
+    stats: {
+      activeCount,
+      cancelledCount,
+      expiredCount,
+      mrr,
+      totalUsersOnPaid: activeCount,
+    },
+    list,
+    isMock: false,
+  };
 }
 
 export default async function AdminSubscriptionsPage() {
@@ -215,7 +183,7 @@ export default async function AdminSubscriptionsPage() {
   try {
     await requireAdmin();
   } catch {
-    redirect("/");
+    redirect("/dashboard/admin");
   }
 
   const { stats, list, isMock } = await getSubscriptionData();
@@ -236,9 +204,9 @@ export default async function AdminSubscriptionsPage() {
       color: "text-indigo-500",
     },
     {
-      title: "Cancelled (this month)",
+      title: "Cancelled subscriptions",
       value: stats.cancelledCount.toString(),
-      desc: "Subscription churn rate",
+      desc: "Recorded cancellations",
       icon: XCircle,
       color: "text-rose-500",
     },
@@ -254,12 +222,9 @@ export default async function AdminSubscriptionsPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       {isMock && (
-        <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-2xl text-amber-800 dark:text-amber-300 text-xs">
+        <div className="flex items-center gap-3 p-4 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/30 rounded-lg text-amber-800 dark:text-amber-300 text-xs">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <div>
-            <strong className="font-semibold">Mock Billing Active</strong>: Dodo/Stripe
-            configuration is empty. Displaying developer sandbox subscription logs.
-          </div>
+          <div>Subscriptions in the admin demo are sample records.</div>
         </div>
       )}
 
@@ -279,7 +244,7 @@ export default async function AdminSubscriptionsPage() {
           return (
             <Card
               key={idx}
-              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl shadow-sm hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
+              className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg hover:border-neutral-300 dark:hover:border-neutral-700 transition-colors"
             >
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
@@ -291,7 +256,7 @@ export default async function AdminSubscriptionsPage() {
                 <div className="text-2xl font-bold tracking-tight text-neutral-950 dark:text-white">
                   {m.value}
                 </div>
-                <p className="text-[11px] text-neutral-400 mt-1">{m.desc}</p>
+                <p className="text-xs text-neutral-400 mt-1">{m.desc}</p>
               </CardContent>
             </Card>
           );
@@ -299,9 +264,9 @@ export default async function AdminSubscriptionsPage() {
       </div>
 
       {/* Subscriptions Table */}
-      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm">
+      <Card className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden">
         <CardHeader className="border-b border-neutral-100 dark:border-neutral-800 p-4">
-          <CardTitle className="text-sm font-extrabold uppercase tracking-wider text-neutral-400">
+          <CardTitle className="text-sm font-semibold text-slate-700 dark:text-slate-300">
             All Subscriptions
           </CardTitle>
         </CardHeader>
@@ -339,7 +304,7 @@ export default async function AdminSubscriptionsPage() {
                     key={sub.id}
                     className="border-b border-neutral-100 dark:border-neutral-800 last:border-0 hover:bg-neutral-50/50 dark:hover:bg-neutral-950/20 transition-all"
                   >
-                    <td className="p-4 font-semibold text-neutral-850 dark:text-neutral-100">
+                    <td className="p-4 font-semibold text-neutral-800 dark:text-neutral-100">
                       {sub.customerName}
                     </td>
                     <td className="p-4 text-neutral-550 dark:text-neutral-400 font-mono text-xs">

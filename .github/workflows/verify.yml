@@ -41,5 +41,8 @@ jobs:
       - name: Install Monorepo Dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify Builds and Formats
+      - name: Check types, build, and lint
         run: pnpm verify
+
+      - name: Run tests
+        run: pnpm test

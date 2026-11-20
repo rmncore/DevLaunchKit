@@ -1,7 +1,7 @@
 "use server";
 
-import { requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
-import { db, profiles, feedback, systemSettings } from "@devlaunchkit/database";
+import { DEMO_ADMIN_SESSION, requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { db, profiles, feedback, sessions, systemSettings } from "@devlaunchkit/database";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
@@ -17,8 +17,8 @@ export async function suspendUserAction(userId: string): Promise<ActionResponse>
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     await db
@@ -37,8 +37,8 @@ export async function unsuspendUserAction(userId: string): Promise<ActionRespons
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     await db
@@ -57,8 +57,8 @@ export async function promoteToAdminAction(userId: string): Promise<ActionRespon
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     await db
@@ -77,8 +77,8 @@ export async function demoteAdminAction(userId: string): Promise<ActionResponse>
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     await db
@@ -97,8 +97,8 @@ export async function deleteUserAction(userId: string): Promise<ActionResponse> 
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     // Hard delete or soft delete (setting deletedAt)
@@ -119,8 +119,8 @@ export async function resolveFeedbackAction(feedbackId: string): Promise<ActionR
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     await db.update(feedback).set({ status: "resolved" }).where(eq(feedback.id, feedbackId));
@@ -136,8 +136,8 @@ export async function deleteFeedbackAction(feedbackId: string): Promise<ActionRe
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
-      return { success: true, data: null };
+    if (isDatabaseMockMode()) {
+      return { success: false, data: null, error: "Sample records are read-only in the demo." };
     }
 
     await db.delete(feedback).where(eq(feedback.id, feedbackId));
@@ -160,7 +160,7 @@ export async function updateSystemSettingsAction(data: {
   try {
     await requireAdmin();
 
-    if (await isDatabaseMockMode()) {
+    if (isDatabaseMockMode()) {
       // In mock mode, store settings in cookies so they persist between requests in dev
       const cookieStore = await cookies();
       cookieStore.set("mock_settings", JSON.stringify(data), { maxAge: 60 * 60 * 24 });
@@ -197,19 +197,35 @@ export async function updateSystemSettingsAction(data: {
   }
 }
 
-// Dev utility: toggle admin cookie helper
-export async function toggleAdminCookieAction(isAdmin: boolean): Promise<ActionResponse> {
-  try {
-    const cookieStore = await cookies();
-    if (isAdmin) {
-      cookieStore.set("auth_session", "tok_mock_admin", { maxAge: 60 * 60 * 24 });
-      cookieStore.set("mock_role", "admin", { maxAge: 60 * 60 * 24 });
-    } else {
-      cookieStore.delete("auth_session");
-      cookieStore.delete("mock_role");
-    }
-    return { success: true, data: null };
-  } catch (error: any) {
-    return { success: false, data: null, error: error.message };
+export async function startAdminDemoAction(): Promise<ActionResponse> {
+  if (!isDatabaseMockMode()) {
+    return { success: false, data: null, error: "The local admin demo is unavailable." };
   }
+
+  const cookieStore = await cookies();
+  cookieStore.set("auth_session", DEMO_ADMIN_SESSION, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    maxAge: 60 * 60 * 24,
+  });
+  return { success: true, data: null };
+}
+
+export async function signOutAction(): Promise<ActionResponse> {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("auth_session")?.value;
+
+  try {
+    if (sessionToken && sessionToken !== DEMO_ADMIN_SESSION) {
+      await db.delete(sessions).where(eq(sessions.token, sessionToken));
+    }
+  } catch (error) {
+    console.error("Could not end the session:", error);
+    return { success: false, data: null, error: "Could not sign out. Please try again." };
+  }
+
+  cookieStore.delete("auth_session");
+  cookieStore.delete("mock_role");
+  return { success: true, data: null };
 }

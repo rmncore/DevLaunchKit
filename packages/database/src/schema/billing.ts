@@ -9,7 +9,7 @@ import {
   index,
   uniqueIndex,
 } from "drizzle-orm/pg-core";
-import { organizations, profiles } from "./core";
+import { organizations, profiles } from "./core.js";
 
 // 1. Plans Table (High-level plan grouping)
 export const plans = pgTable("plans", {

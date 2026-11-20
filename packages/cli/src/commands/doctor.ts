@@ -1,8 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
 import { execSync } from "child_process";
-import { envSchema } from "@devlaunchkit/env";
-import { checkDatabaseHealth } from "@devlaunchkit/database";
 
 // ANSI Color Escape Codes
 const RESET = "\x1b[0m";
@@ -86,8 +84,8 @@ export async function handleDoctorCommand(shouldExit: boolean = true): Promise<v
       `Environment files detected (${envExists ? ".env " : ""}${envLocalExists ? ".env.local" : ""})`
     );
 
-    // Parse environment variables loaded into process.env
-    // Validate with envSchema
+    // Load environment files only when running diagnostics.
+    const { envSchema } = await import("@devlaunchkit/env");
     const parsed = envSchema.safeParse(process.env);
     if (parsed.success) {
       logSuccess("Environment variable schema: OK (Zod verification passed)");
@@ -144,7 +142,8 @@ export async function handleDoctorCommand(shouldExit: boolean = true): Promise<v
 
   if (process.env.DATABASE_URL && !process.env.DATABASE_URL.includes("your_key")) {
     try {
-      const dbHealth = await checkDatabaseHealth();
+      const { checkDatabaseHealth, client } = await import("@devlaunchkit/database");
+      const dbHealth = await checkDatabaseHealth().finally(() => client.end());
       if (dbHealth.status === "healthy") {
         logSuccess(`Database connectivity: OK (Latency: ${dbHealth.latencyMs}ms)`);
       } else {

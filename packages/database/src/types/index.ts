@@ -1,4 +1,4 @@
-import * as schema from "../schema";
+import * as schema from "../schema/index.js";
 
 // Core Models
 export type Profile = typeof schema.profiles.$inferSelect;

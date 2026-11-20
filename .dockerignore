@@ -1,0 +1,10 @@
+.git
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/*.tsbuildinfo
+**/.env*
+**/*.pem
+**/*.key
+**/*.log

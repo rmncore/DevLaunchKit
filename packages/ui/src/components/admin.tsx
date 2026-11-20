@@ -2,7 +2,7 @@
 
 import { cn } from "../utils/cn";
 import { useState, HTMLAttributes } from "react";
-import { Badge, Table, MetricCards, Progress } from "./data-display";
+import { Badge, Table, MetricCards } from "./data-display";
 import {
   Shield,
   ShieldAlert,
@@ -188,8 +188,8 @@ export interface AuditLog {
 
 export function AuditLogViewer({ logs }: { logs: AuditLog[] }) {
   return (
-    <div className="w-full border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-950 overflow-hidden text-left text-sm">
-      <div className="p-4 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-bold text-slate-650 dark:text-slate-300">
+    <div className="w-full overflow-hidden rounded-lg border border-slate-200 bg-white text-left text-sm dark:border-slate-800 dark:bg-slate-950">
+      <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
         <Terminal className="w-4 h-4" /> System Audit Logs
       </div>
       <div className="divide-y divide-slate-100 dark:divide-slate-900 font-mono text-xs">
@@ -198,14 +198,14 @@ export function AuditLogViewer({ logs }: { logs: AuditLog[] }) {
             key={log.id}
             className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-2.5 hover:bg-slate-50/50 dark:hover:bg-slate-900/30 transition-colors"
           >
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-slate-900 dark:text-white bg-indigo-50 dark:bg-indigo-950/20 px-1.5 py-0.5 rounded border border-indigo-100 dark:border-indigo-900/30 text-[10px]">
+            <div className="min-w-0 space-y-1 break-words">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-semibold text-slate-800 dark:text-slate-100">
                   {log.action}
                 </span>
-                <span className="text-slate-400 font-semibold">{log.timestamp}</span>
+                <span className="text-slate-600 dark:text-slate-400">{log.timestamp}</span>
               </div>
-              <p className="text-slate-550 dark:text-slate-400">
+              <p className="text-slate-600 dark:text-slate-400">
                 User{" "}
                 <span className="font-bold text-slate-700 dark:text-slate-200">{log.user}</span>{" "}
                 updated resource <span className="underline">{log.resource}</span>.
@@ -222,7 +222,7 @@ export function AuditLogViewer({ logs }: { logs: AuditLog[] }) {
 // AnalyticsCards & RevenueCards wrapper grids
 export function AnalyticsCards() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 my-4">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-4">
       <MetricCards title="New Signups" value="2,482" unit="+12% w/w" />
       <MetricCards title="Active Sessions" value="482" unit="live" />
       <MetricCards title="Page Views" value="45.2k" unit="24h" />
@@ -249,16 +249,22 @@ export interface ServiceStatus {
 }
 
 export function SystemStatus({ services }: { services: ServiceStatus[] }) {
+  const summary = services.some((service) => service.status === "outage")
+    ? { label: "Service outage", variant: "danger" as const }
+    : services.some((service) => service.status === "degraded")
+      ? { label: "Degraded performance", variant: "warning" as const }
+      : services.length
+        ? { label: "All operational", variant: "success" as const }
+        : { label: "No services reported", variant: "secondary" as const };
+
   return (
-    <div className="p-6 border border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-950 text-left space-y-4">
-      <div className="flex justify-between items-center border-b border-slate-100 dark:border-slate-900 pb-3">
+    <div className="space-y-4 rounded-lg border border-slate-200 bg-white p-4 text-left dark:border-slate-800 dark:bg-slate-950 sm:p-5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3 dark:border-slate-900">
         <div className="flex items-center gap-2">
           <Activity className="w-5 h-5 text-indigo-500" />
-          <h4 className="font-extrabold text-base text-slate-900 dark:text-white">
-            System Monitor
-          </h4>
+          <h4 className="text-base font-semibold text-slate-900 dark:text-white">System Monitor</h4>
         </div>
-        <Badge variant="success">All Operational</Badge>
+        <Badge variant={summary.variant}>{summary.label}</Badge>
       </div>
 
       <div className="space-y-3.5">
@@ -283,9 +289,9 @@ export function SystemStatus({ services }: { services: ServiceStatus[] }) {
                 <span
                   className={cn(
                     "text-xs font-bold capitalize",
-                    s.status === "operational" && "text-emerald-500",
-                    s.status === "degraded" && "text-amber-500",
-                    s.status === "outage" && "text-red-500"
+                    s.status === "operational" && "text-emerald-700 dark:text-emerald-400",
+                    s.status === "degraded" && "text-amber-700 dark:text-amber-300",
+                    s.status === "outage" && "text-red-700 dark:text-red-300"
                   )}
                 >
                   {s.status}
@@ -294,23 +300,6 @@ export function SystemStatus({ services }: { services: ServiceStatus[] }) {
             </div>
           );
         })}
-      </div>
-
-      <div className="border-t border-slate-100 dark:border-slate-900 pt-4 mt-2 space-y-3">
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs font-bold text-slate-400">
-            <span>CPU Utilisation</span>
-            <span>24%</span>
-          </div>
-          <Progress value={24} />
-        </div>
-        <div className="space-y-1">
-          <div className="flex justify-between text-xs font-bold text-slate-400">
-            <span>Memory Utilisation</span>
-            <span>52%</span>
-          </div>
-          <Progress value={52} />
-        </div>
       </div>
     </div>
   );

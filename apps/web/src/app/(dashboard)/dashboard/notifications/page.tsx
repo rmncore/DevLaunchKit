@@ -49,9 +49,9 @@ export default function NotificationsPage() {
                   <h4 className="text-xs font-semibold text-neutral-900 dark:text-white">
                     {alertItem.title}
                   </h4>
-                  <p className="text-[11px] text-neutral-500 mt-0.5">{alertItem.msg}</p>
+                  <p className="text-xs text-neutral-500 mt-0.5">{alertItem.msg}</p>
                 </div>
-                <span className="text-[10px] text-neutral-400 shrink-0">{alertItem.date}</span>
+                <span className="text-xs text-neutral-400 shrink-0">{alertItem.date}</span>
               </div>
             ))}
           </div>

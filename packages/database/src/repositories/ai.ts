@@ -1,6 +1,6 @@
-import { BaseRepository } from "./base";
-import { AIConversation, InsertAIConversation } from "../types";
-import { aiConversations, aiMessages, aiUsage, modelUsage, promptTemplates } from "../schema";
+import { BaseRepository } from "./base.js";
+import { AIConversation, InsertAIConversation } from "../types/index.js";
+import { aiConversations, aiMessages, aiUsage, modelUsage, promptTemplates } from "../schema/index.js";
 import { eq, and, sql } from "drizzle-orm";
 
 export class AIRepository extends BaseRepository<
