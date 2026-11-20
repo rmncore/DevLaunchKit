@@ -11,7 +11,6 @@ interface SettingsData {
   logoUrl: string;
   supportEmail: string;
   maintenanceMode: boolean;
-  allowedDomains: string;
 }
 
 export default function SettingsForm({ initialSettings }: { initialSettings: SettingsData }) {
@@ -126,7 +125,7 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
             System Parameters
           </CardTitle>
           <CardDescription className="text-xs text-neutral-400">
-            Configure security boundaries and gateway modes.
+            Manage access to the public site and workspace during maintenance.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-4">
@@ -137,12 +136,16 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
                 Maintenance Mode
               </div>
               <div className="text-xs text-neutral-400">
-                Lock the main app with a scheduled maintenance block.
+                Show the maintenance page until this setting is turned off. Admin and sign-in remain
+                available.
               </div>
             </div>
             <button
               type="button"
               onClick={handleToggle}
+              role="switch"
+              aria-label="Maintenance mode"
+              aria-checked={formData.maintenanceMode}
               className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                 formData.maintenanceMode ? "bg-indigo-600" : "bg-neutral-200 dark:bg-neutral-800"
               }`}
@@ -153,28 +156,6 @@ export default function SettingsForm({ initialSettings }: { initialSettings: Set
                 }`}
               />
             </button>
-          </div>
-
-          <div className="grid gap-2">
-            <label
-              className="text-xs font-semibold text-neutral-500 uppercase tracking-wider"
-              htmlFor="allowedDomains"
-            >
-              Allowed CORS Domains
-            </label>
-            <input
-              id="allowedDomains"
-              type="text"
-              name="allowedDomains"
-              value={formData.allowedDomains}
-              onChange={handleChange}
-              placeholder="e.g. *.domain.com, localhost:3000"
-              required
-              className="bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl px-4 py-2 text-sm focus:outline-none text-neutral-900 dark:text-white"
-            />
-            <p className="text-xs text-neutral-400">
-              Comma-separated list of hosts permitted to invoke key REST gateways.
-            </p>
           </div>
         </CardContent>
       </Card>

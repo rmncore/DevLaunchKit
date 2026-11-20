@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ContentWrapper, PageContainer, PageHeader, SettingsCard } from "@devlaunchkit/ui";
-import { isDatabaseMockMode, requireAdmin } from "@/lib/auth-server";
+import { isDatabaseMockMode, requireAdmin } from "@/lib/auth/session";
 import AdminDemoButton from "./admin-demo-button";
 
 export default async function AdminPage() {
@@ -34,7 +34,7 @@ export default async function AdminPage() {
               ? "Open the console to continue."
               : demoEnabled
                 ? "Explore the console with sample records in this development instance."
-                : "Connect an authentication provider and sign in with an administrator account to use the console."
+                : "Sign in with an administrator account to use the console."
           }
         >
           {hasAdminSession ? (
@@ -48,10 +48,10 @@ export default async function AdminPage() {
             <AdminDemoButton />
           ) : (
             <Link
-              href="/dashboard/docs"
+              href="/sign-in"
               className="text-sm font-semibold text-indigo-700 underline dark:text-indigo-300"
             >
-              View workspace documentation
+              Sign in
             </Link>
           )}
         </SettingsCard>

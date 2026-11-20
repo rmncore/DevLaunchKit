@@ -23,6 +23,8 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/launchkit
       DEVLAUNCHKIT_ADMIN_DEMO: ${DEVLAUNCHKIT_ADMIN_DEMO:-false}
+      AUTH_BASE_URL: ${AUTH_BASE_URL:-http://localhost:3000}
+      AUTH_SECRET_KEY: ${AUTH_SECRET_KEY:-}
     depends_on:
       db:
         condition: service_healthy

@@ -9,6 +9,8 @@
       "dependsOn": ["^build"],
       "passThroughEnv": [
         "DATABASE_URL",
+        "AUTH_BASE_URL",
+        "AUTH_SECRET_KEY",
         "DEVLAUNCHKIT_ADMIN_DEMO",
         "PORT",
         "NEXT_TELEMETRY_DISABLED"

@@ -13,7 +13,7 @@ import {
   Eye,
   ArrowUpDown,
 } from "lucide-react";
-import { requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { requireAdminPage, isDatabaseMockMode } from "@/lib/auth/session";
 import {
   db,
   profiles,
@@ -23,7 +23,6 @@ import {
   products,
 } from "@devlaunchkit/database";
 import { and, or, ilike, eq, count, desc, asc, isNull, sql } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import AdminActionButton from "../action-button";
 import { demoUsers, type DisplayUser } from "./demo-users";
@@ -50,12 +49,7 @@ export default async function AdminUsersPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  // 1. Authorize admin session
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/dashboard/admin");
-  }
+  await requireAdminPage();
 
   const params = await searchParams;
   const q = params.q || "";

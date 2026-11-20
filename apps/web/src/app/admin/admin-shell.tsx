@@ -65,7 +65,8 @@ function AdminShellInner({ children, userEmail, demo }: AdminShellProps) {
     try {
       const result = await signOutAction();
       if (result.success) {
-        router.replace("/dashboard/admin");
+        router.replace(demo ? "/dashboard/admin" : "/sign-in");
+        router.refresh();
       } else {
         setSignOutError(result.error ?? "Could not sign out.");
       }

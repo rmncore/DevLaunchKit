@@ -1,8 +1,15 @@
 import { Card, Charts, PageHeader, SystemStatus } from "@devlaunchkit/ui";
-import { isDatabaseMockMode, requireAdmin } from "@/lib/auth-server";
-import { db, profiles, sessions, subscriptions, prices, auditLogs } from "@devlaunchkit/database";
+import { isDatabaseMockMode, requireAdminPage } from "@/lib/auth/session";
+import {
+  db,
+  profiles,
+  sessions,
+  authSessions,
+  subscriptions,
+  prices,
+  auditLogs,
+} from "@devlaunchkit/database";
 import { and, count, eq, gt, isNull, sql } from "drizzle-orm";
-import { redirect } from "next/navigation";
 
 // Define stats shape
 interface StatsData {
@@ -91,10 +98,11 @@ async function getStats(): Promise<StatsData> {
     .from(profiles)
     .where(and(gt(profiles.createdAt, todayStart), isNull(profiles.deletedAt)));
 
-  const [activeSessionsCount] = await db
-    .select({ val: count() })
-    .from(sessions)
-    .where(gt(sessions.expiresAt, new Date()));
+  const now = new Date();
+  const [[legacySessions], [providerSessions]] = await Promise.all([
+    db.select({ val: count() }).from(sessions).where(gt(sessions.expiresAt, now)),
+    db.select({ val: count() }).from(authSessions).where(gt(authSessions.expiresAt, now)),
+  ]);
 
   const [activeSubsCount] = await db
     .select({ val: count() })
@@ -145,7 +153,7 @@ async function getStats(): Promise<StatsData> {
   return {
     totalUsers: usersCount.val,
     newUsersToday: newUsersCount.val,
-    activeUsers: activeSessionsCount.val,
+    activeUsers: legacySessions.val + providerSessions.val,
     activeSubscriptions: activeSubsCount.val,
     monthlyRevenue: Math.round(mrr),
     annualRevenue: Math.round(arr),
@@ -160,13 +168,7 @@ async function getStats(): Promise<StatsData> {
 }
 
 export default async function AdminDashboardPage() {
-  // Enforce server-side authorization check
-  try {
-    await requireAdmin();
-  } catch {
-    // If not admin, redirect to home page
-    redirect("/dashboard/admin");
-  }
+  await requireAdminPage();
 
   const stats = await getStats();
 

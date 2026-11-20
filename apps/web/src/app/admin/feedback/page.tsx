@@ -1,10 +1,9 @@
 import * as React from "react";
 import { Card, Avatar, Badge } from "@devlaunchkit/ui";
 import { Search, CheckCircle, Trash2, AlertCircle, Filter, Star } from "lucide-react";
-import { requireAdmin, isDatabaseMockMode } from "@/lib/auth-server";
+import { requireAdminPage, isDatabaseMockMode } from "@/lib/auth/session";
 import { db, feedback, profiles } from "@devlaunchkit/database";
 import { eq, desc, and, like, or } from "drizzle-orm";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import AdminActionButton from "../action-button";
 import { resolveFeedbackAction, deleteFeedbackAction } from "../actions";
@@ -148,12 +147,7 @@ export default async function AdminFeedbackPage({
 }: {
   searchParams: Promise<SearchParams>;
 }) {
-  // Authorize admin
-  try {
-    await requireAdmin();
-  } catch {
-    redirect("/dashboard/admin");
-  }
+  await requireAdminPage();
 
   const params = await searchParams;
   const q = params.q || "";
